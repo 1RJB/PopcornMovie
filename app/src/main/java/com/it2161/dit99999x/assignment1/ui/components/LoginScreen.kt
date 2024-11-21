@@ -40,11 +40,18 @@ fun LoginScreen(navController: NavController) {
             painter = painterResource(id = R.drawable.movie_viewer_logo),
             contentDescription = "App Logo",
             modifier = Modifier
-                .size(330.dp)
-                .padding(top = 45.dp)
+                .size(430.dp)
+                .padding(top = 80.dp)
         )
 
-        Spacer(modifier = Modifier.height(45.dp)) // Add spacing between logo and controls
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Text(
+            text = "Login",
+            style = MaterialTheme.typography.headlineMedium,
+            modifier = Modifier.padding(top = 10.dp))
+
+        Spacer(modifier = Modifier.height(25.dp)) // Add spacing between logo and controls
 
         OutlinedTextField(
             value = userId,
@@ -52,7 +59,7 @@ fun LoginScreen(navController: NavController) {
             label = { Text("User ID") },
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 51.dp)
+                .padding(horizontal = 48.dp)
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -76,7 +83,7 @@ fun LoginScreen(navController: NavController) {
             },
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 51.dp)
+                .padding(horizontal = 48.dp)
         )
 
         Spacer(modifier = Modifier.height(45.dp))

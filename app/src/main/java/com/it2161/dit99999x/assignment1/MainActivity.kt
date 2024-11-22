@@ -32,7 +32,7 @@ class MainActivity : ComponentActivity() {
                         composable("register") { RegisterUserScreen(navController) }
                         composable("movieDetail") { MovieDetailScreen() }
                         composable("comment") { CommentMovieScreen() }
-                        composable("profile") { ProfileScreen() }
+                        composable("profile") { ProfileScreen(navController) }
                         // ... (Your other composable routes)
                     }
                 }

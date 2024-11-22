@@ -20,6 +20,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.it2161.dit99999x.assignment1.MovieRaterApplication
+import com.it2161.dit99999x.assignment1.data.UserProfile
 import java.util.*
 
 @Composable
@@ -49,7 +51,7 @@ fun RegisterUserScreen(navController: NavController) {
         OutlinedTextField(
             value = userName,
             onValueChange = { userName = it },
-            label = { Text("User Name") },
+            label = { Text("Username") },
             modifier = Modifier.fillMaxWidth().padding(horizontal = 15.dp)
         )
 
@@ -129,6 +131,13 @@ fun RegisterUserScreen(navController: NavController) {
         Button(
             onClick = {
                 if (validateFields(userName, password, confirmPassword, email, gender, mobileNumber, yearOfBirth)) {
+                    // Clear existing profile
+                    MovieRaterApplication.instance.userProfile = null
+
+                    // Create new profile
+                    val newProfile = UserProfile(userName, password, email, gender, mobileNumber, receiveUpdates, yearOfBirth)
+                    MovieRaterApplication.instance.userProfile = newProfile
+
                     navController.navigate("landing")
                 } else {
                     // Display error message using Toast

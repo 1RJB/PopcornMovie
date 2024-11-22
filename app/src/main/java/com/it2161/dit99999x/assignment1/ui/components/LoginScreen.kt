@@ -1,5 +1,6 @@
 package com.it2161.dit99999x.assignment1.ui.components
 
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
@@ -22,12 +23,13 @@ import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.navigation.compose.rememberNavController
+import com.it2161.dit99999x.assignment1.MovieRaterApplication
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoginScreen(navController: NavController) {
     val context = LocalContext.current
-    var userId by remember { mutableStateOf("") }
+    var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
 
@@ -54,9 +56,9 @@ fun LoginScreen(navController: NavController) {
         Spacer(modifier = Modifier.height(25.dp)) // Add spacing between logo and controls
 
         OutlinedTextField(
-            value = userId,
-            onValueChange = { userId = it },
-            label = { Text("User ID") },
+            value = username,
+            onValueChange = { username = it },
+            label = { Text("Username") },
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 48.dp)
@@ -91,10 +93,11 @@ fun LoginScreen(navController: NavController) {
         Button(
             onClick = {
                 // Handle login and navigate to Landing screen if successful
-                if (isValidLogin(userId, password)) {
+                if (isValidLogin(username, password)) {
                     navController.navigate("landing")
                 } else {
-                    // Show error message (e.g., using a Snackbar)
+                    // Show error message (e.g., using a Toast)
+                    Toast.makeText(context, "Invalid username or password", Toast.LENGTH_SHORT).show()
                 }
             },
             modifier = Modifier.padding(horizontal = 16.dp)
@@ -116,9 +119,13 @@ fun LoginScreen(navController: NavController) {
 }
 
 // Placeholder for login validation logic
-fun isValidLogin(userId: String, password: String): Boolean {
-    // Replace with your actual login validation
-    return userId == "TestUser1" && password == "TestPassword1"
+fun isValidLogin(username: String, password: String): Boolean {
+    val userProfile = MovieRaterApplication.instance.userProfile
+    if (userProfile!!.userName.isNotEmpty()) {
+        return userProfile.userName == username && userProfile.password == password
+    }
+    return username == "TestUser1" && password == "TestPassword1"
+
 }
 
 @Preview

@@ -26,6 +26,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -36,6 +37,7 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import com.it2161.dit99999x.assignment1.MovieRaterApplication
 import com.it2161.dit99999x.assignment1.data.MovieItem
 import com.it2161.dit99999x.assignment1.data.Comments
@@ -123,7 +125,7 @@ fun LandingScreen(navController: NavController) {
 
 @Composable
 fun MovieItemCard(movie: MovieItem, onMovieClick: () -> Unit) {
-    var imageHeight by remember { mutableStateOf(0) }
+    var imageHeight by remember { mutableIntStateOf(0) }
 
     Card(
         modifier = Modifier
@@ -172,5 +174,5 @@ fun MovieItemCard(movie: MovieItem, onMovieClick: () -> Unit) {
 @Preview
 @Composable
 fun LandingScreenPreview() {
-    //LandingScreen()
+    LandingScreen(navController = rememberNavController())
 }

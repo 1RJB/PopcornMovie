@@ -18,6 +18,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import com.it2161.dit99999x.assignment1.MovieRaterApplication
 import com.it2161.dit99999x.assignment1.R
 import com.it2161.dit99999x.assignment1.data.UserProfile
@@ -173,5 +174,5 @@ fun EditProfileContent(userProfile: MutableState<UserProfile>) {
 @Preview
 @Composable
 fun ProfileScreenPreview() {
-    // ProfileScreen() // You might need to provide a NavController for the preview
+    ProfileScreen(navController = rememberNavController())
 }

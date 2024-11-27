@@ -11,7 +11,7 @@ data class MovieItem(
     val genre: String,
     val length: Int,
     val synopsis: String,
-    val comment: List<Comments>
+    var comment: List<Comments>
 )
 
 data class Comments(

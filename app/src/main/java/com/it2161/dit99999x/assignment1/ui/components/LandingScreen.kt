@@ -49,10 +49,11 @@ import jsonData
 @Composable
 fun LandingScreen(navController: NavController) {
 
+    val gson = Gson()
+
     // Parse JSON data
     val movieList = remember {
         val jsonArray = JSONArray(jsonData)
-        val gson = Gson()
         val movies = mutableListOf<MovieItem>()
         for (i in 0 until jsonArray.length()) {
             val jsonObject = jsonArray.getJSONObject(i)
@@ -72,6 +73,8 @@ fun LandingScreen(navController: NavController) {
         }
         movies
     }
+
+
 
     var showMenu by remember { mutableStateOf(false) }
 
@@ -114,9 +117,9 @@ fun LandingScreen(navController: NavController) {
                 .fillMaxSize()
         ) {
             items(movieList) { movie ->
-                MovieItemCard(movie) {
-                    // Navigate to Movie Detail screen, passing movie ID or object
-                    navController.navigate("movieDetails/${movie.title}")
+                // Pass gson to MovieItemCard
+                MovieItemCard(movie, gson) {
+                    navController.navigate("movieDetail/${gson.toJson(movie)}")
                 }
             }
         }
@@ -124,7 +127,7 @@ fun LandingScreen(navController: NavController) {
 }
 
 @Composable
-fun MovieItemCard(movie: MovieItem, onMovieClick: () -> Unit) {
+fun MovieItemCard(movie: MovieItem, gson: Gson, onMovieClick: () -> Unit) {
     var imageHeight by remember { mutableIntStateOf(0) }
 
     Card(

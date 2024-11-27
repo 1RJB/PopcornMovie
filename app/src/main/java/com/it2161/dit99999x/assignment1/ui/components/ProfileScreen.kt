@@ -6,6 +6,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Save
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.getValue
@@ -15,6 +17,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -35,6 +39,7 @@ fun ProfileScreen(navController: NavController) {
     val imageHeight = screenHeight / 3
 
     var showMenu by remember { mutableStateOf(false) }
+    var passwordError by remember { mutableStateOf(false) } // Define passwordError state
 
     Scaffold(
         topBar = {
@@ -53,7 +58,7 @@ fun ProfileScreen(navController: NavController) {
                         IconButton(onClick = {
                             MovieRaterApplication.instance.userProfile = userProfile.value
                             isEditing = false
-                            navController.popBackStack()
+                            navController.navigate("profile")
                         }) {
                             Icon(Icons.Filled.Save, contentDescription = "Save")
                         }
@@ -98,7 +103,9 @@ fun ProfileScreen(navController: NavController) {
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             if (isEditing) {
-                EditProfileContent(userProfile)
+                EditProfileContent(userProfile) { isPasswordError ->
+                    passwordError = isPasswordError // Update passwordError state
+                }
             } else {
                 Image(
                     painter = painterResource(id = R.drawable.avatar_3),
@@ -111,13 +118,15 @@ fun ProfileScreen(navController: NavController) {
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Column(
-                    horizontalAlignment = Alignment.CenterHorizontally
+                    modifier = Modifier.fillMaxWidth().padding(30.dp),
+                    horizontalAlignment = Alignment.Start
                 ) {
-                    Text("Username: ${userProfile.value.userName}")
-                    Text("Email: ${userProfile.value.email}")
-                    Text("Gender: ${userProfile.value.gender}")
-                    Text("Mobile: ${userProfile.value.mobile}")
-                    Text("Year of Birth: ${userProfile.value.yob}")
+                    ProfileDetailRow("Username", userProfile.value.userName)
+                    ProfileDetailRow("Year of Birth", userProfile.value.yob)
+                    ProfileDetailRow("Gender", userProfile.value.gender)
+                    ProfileDetailRow("Mobile", userProfile.value.mobile)
+                    ProfileDetailRow("Email", userProfile.value.email)
+                    ProfileDetailRow("Receive Updates", if (userProfile.value.updates) "Yes" else "No")
                 }
             }
         }
@@ -125,13 +134,27 @@ fun ProfileScreen(navController: NavController) {
 }
 
 @Composable
-fun EditProfileContent(userProfile: MutableState<UserProfile>) {
-    // Avatar Selection (similar to Registration screen)
-    // ...
+fun ProfileDetailRow(label: String, value: String) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp), // Add vertical spacing
+        horizontalArrangement = Arrangement.SpaceBetween // Space between label and value
+    ) {
+        Text(label, style = MaterialTheme.typography.bodyMedium)
+        Text(value, style = MaterialTheme.typography.bodyMedium)
+    }
+}
+
+@Composable
+fun EditProfileContent(userProfile: MutableState<UserProfile>, onPasswordError: (Boolean) -> Unit) {
+    var confirmPassword by remember { mutableStateOf("") } // State for confirm password
+    var passwordError by remember { mutableStateOf(false) } // State for password error
+    var passwordVisible by remember { mutableStateOf(false) }
+    var confirmPasswordVisible by remember { mutableStateOf(false) }
+    var showEmptyFieldError by remember { mutableStateOf(false) } // State for empty field error
 
     // Input fields for Name, Email, Gender, Mobile, Year of Birth
-    // Use OutlinedTextField and remember the values in userProfile state
-    // ... Example for Name:
     OutlinedTextField(
         value = userProfile.value.userName,
         onValueChange = { userProfile.value = userProfile.value.copy(userName = it) },
@@ -140,9 +163,46 @@ fun EditProfileContent(userProfile: MutableState<UserProfile>) {
             .padding(16.dp)
     )
     OutlinedTextField(
-        value = userProfile.value.email,
-        onValueChange = { userProfile.value = userProfile.value.copy(email = it) },
-        label = { Text("Email") },
+        value = userProfile.value.password,
+        onValueChange = {
+            userProfile.value = userProfile.value.copy(password = it)
+            passwordError = it != confirmPassword // Update passwordError state immediately
+            onPasswordError(passwordError)
+        },
+        label = { Text("Password") },
+        visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+        trailingIcon = {
+            val image = if (passwordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
+            IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                Icon(imageVector = image, contentDescription = if (passwordVisible) "Hide password" else "Show password")
+            }
+        },
+        modifier = Modifier.fillMaxWidth()
+            .padding(16.dp),
+        isError = passwordError // Show error state if passwords don't match
+    )
+    OutlinedTextField(
+        value = confirmPassword,
+        onValueChange = {
+            confirmPassword = it
+            passwordError = userProfile.value.password != it // Update passwordError state immediately
+            onPasswordError(passwordError)
+        },
+        label = { Text("Confirm Password") },
+        visualTransformation = if (confirmPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+        trailingIcon = {
+            val image = if (confirmPasswordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
+            IconButton(onClick = { confirmPasswordVisible = !confirmPasswordVisible }) {
+                Icon(imageVector = image, contentDescription = if (confirmPasswordVisible) "Hide password" else "Show password")
+            }
+        },
+        modifier = Modifier.fillMaxWidth().padding(16.dp),
+        isError = passwordError // Show error state if passwords don't match
+    )
+    OutlinedTextField(
+        value = userProfile.value.yob,
+        onValueChange = { userProfile.value = userProfile.value.copy(yob = it) },
+        label = { Text("Year of Birth") },
         modifier = Modifier.fillMaxWidth()
             .padding(16.dp)
     )
@@ -161,14 +221,21 @@ fun EditProfileContent(userProfile: MutableState<UserProfile>) {
             .padding(16.dp)
     )
     OutlinedTextField(
-        value = userProfile.value.yob,
-        onValueChange = { userProfile.value = userProfile.value.copy(yob = it) },
-        label = { Text("Year of Birth") },
+        value = userProfile.value.email,
+        onValueChange = { userProfile.value = userProfile.value.copy(email = it) },
+        label = { Text("Email") },
         modifier = Modifier.fillMaxWidth()
             .padding(16.dp)
     )
-
-    // ... Similar OutlinedTextFields for other details ...
+    Row(
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Checkbox(
+            checked = userProfile.value.updates == true,
+            onCheckedChange = { userProfile.value = userProfile.value.copy(updates = it) }
+        )
+        Text(text = "Receive updates via email")
+    }
 }
 
 @Preview

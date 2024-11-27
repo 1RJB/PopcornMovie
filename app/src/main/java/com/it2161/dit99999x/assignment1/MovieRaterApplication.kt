@@ -96,7 +96,7 @@ class MovieRaterApplication : Application() {
                         director = director,
                         releaseDate = releaseDate,
                         ratings_score = rating.toFloat(),
-                        actors = actors.toString().split(","),
+                        actors = actors.toString().substring(1, actors.toString().length - 2).split(",").map{ it.trim('"')},
                         image = poster,
                         genre = genre,
                         length = length,

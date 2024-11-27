@@ -52,6 +52,7 @@ fun RegisterUserScreen(navController: NavController) {
             value = userName,
             onValueChange = { userName = it },
             label = { Text("Username") },
+            placeholder = { Text("Enter username") },
             modifier = Modifier.fillMaxWidth().padding(horizontal = 15.dp)
         )
 
@@ -61,6 +62,7 @@ fun RegisterUserScreen(navController: NavController) {
             value = password,
             onValueChange = { password = it },
             label = { Text("Password") },
+            placeholder = { Text("Enter password") },
             visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
             trailingIcon = {
                 val image = if (passwordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
@@ -77,6 +79,7 @@ fun RegisterUserScreen(navController: NavController) {
             value = confirmPassword,
             onValueChange = { confirmPassword = it },
             label = { Text("Confirm Password") },
+            placeholder = { Text("Enter password") },
             visualTransformation = if (confirmPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
             trailingIcon = {
                 val image = if (confirmPasswordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
@@ -99,8 +102,11 @@ fun RegisterUserScreen(navController: NavController) {
 
         OutlinedTextField(
             value = mobileNumber,
-            onValueChange = { mobileNumber = it },
+            onValueChange = { newValue ->
+                mobileNumber = newValue.filter { it.isDigit() }
+            },
             label = { Text("Mobile Number") },
+            placeholder = { Text("Enter mobile number") },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
             modifier = Modifier.fillMaxWidth().padding(horizontal = 15.dp)
         )
@@ -111,6 +117,7 @@ fun RegisterUserScreen(navController: NavController) {
             value = email,
             onValueChange = { email = it },
             label = { Text("Email") },
+            placeholder = { Text("Enter email") },
             modifier = Modifier.fillMaxWidth().padding(horizontal = 15.dp)
         )
 
@@ -141,7 +148,10 @@ fun RegisterUserScreen(navController: NavController) {
                     navController.navigate("landing")
                 } else {
                     // Display error message using Toast
-                    // For example: Toast.makeText(context, "Please fill in all fields", Toast.LENGTH_SHORT).show()
+                    if (password != confirmPassword) {
+                        Toast.makeText(context, "Passwords do not match", Toast.LENGTH_SHORT).show()
+                        return@Button
+                    }
                     Toast.makeText(context, "Please fill in all fields", Toast.LENGTH_SHORT).show()
 
                 }
@@ -213,6 +223,7 @@ fun DropdownMenuField(selectedYear: String, onYearSelected: (String) -> Unit) {
             onValueChange = { },
             readOnly = true,
             label = { Text("Year of Birth") },
+            placeholder = { Text("Select Year of Birth") },
             modifier = Modifier.fillMaxWidth()
                 .padding(horizontal = 15.dp),
             trailingIcon = {

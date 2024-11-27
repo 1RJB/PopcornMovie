@@ -1,8 +1,11 @@
 package com.it2161.dit99999x.assignment1.ui.components
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -12,16 +15,18 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.google.gson.Gson
 import com.it2161.dit99999x.assignment1.MovieRaterApplication
 import com.it2161.dit99999x.assignment1.data.Comments
 import com.it2161.dit99999x.assignment1.data.MovieItem
 import java.text.SimpleDateFormat
 import java.util.*
-import com.it2161.dit99999x.assignment1.ui.components.CommentItem // Import CommentItem from MovieDetail.kt
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -30,16 +35,7 @@ fun CommentMovieScreen(navController: NavController, movie: MovieItem) {
     val scrollState = rememberScrollState()
 
     Scaffold(
-        topBar = {
-            CenterAlignedTopAppBar(
-                title = { Text(movie.title, textAlign = TextAlign.Center) },
-                navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.Filled.ArrowBack, contentDescription = "Back")
-                    }
-                }
-            )
-        }
+        topBar = { MovieRaterTopAppBar(movie.title, navController) }
     ) { innerPadding ->
         Column(
             modifier = Modifier
@@ -58,8 +54,8 @@ fun CommentMovieScreen(navController: NavController, movie: MovieItem) {
                     bitmap = MovieRaterApplication.instance.getImgVector(movie.image).asImageBitmap(),
                     contentDescription = movie.title,
                     modifier = Modifier
-                        .aspectRatio(0.95f) // Make it square
-                        .height(140.dp) // Maintain desired height
+                        .aspectRatio(0.95f)
+                        .height(140.dp)
                         .padding(16.dp),
                 )
 
@@ -107,7 +103,121 @@ fun CommentMovieScreen(navController: NavController, movie: MovieItem) {
     }
 }
 
+@Composable
+fun CommentItem(comment: Comments, navController: NavController) {
+    val gson = Gson()
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(8.dp)
+            .clickable { navController.navigate("view_comments/${gson.toJson(comment)}") },
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = 2.dp
+        )
+    ) {
+        Row(modifier = Modifier.padding(16.dp)) {
+            Box(
+                modifier = Modifier
+                    .size(40.dp)
+                    .background(Color.LightGray, shape = CircleShape)
+                    .wrapContentSize(Alignment.Center)
+            ) {
+                Text(
+                    getInitials(comment.user),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
+            }
 
+            Spacer(modifier = Modifier.width(16.dp))
+
+            Column {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(comment.user, style = MaterialTheme.typography.bodyMedium)
+                    Text(
+                        formatDateTime(comment.date, comment.time),
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(comment.comment, style = MaterialTheme.typography.bodyMedium)
+            }
+        }
+    }
+}
+
+@Composable
+fun ViewCommentScreen(navController: NavController, comment: Comments) {
+    Scaffold(
+        topBar = { MovieRaterTopAppBar("Comment Details", navController) }
+    ) { innerPadding ->
+        Column(
+            modifier = Modifier
+                .padding(innerPadding) // Apply inner padding from Scaffold
+                .padding(16.dp)
+                .fillMaxWidth()
+        ) {
+            Column(
+                modifier = Modifier
+                    .padding(16.dp)
+                    .fillMaxWidth()
+                    .padding(
+                        top = WindowInsets.statusBars.asPaddingValues().calculateTopPadding(),
+                        bottom = WindowInsets.navigationBars.asPaddingValues()
+                            .calculateBottomPadding()
+                    )
+            ) {
+                Row(modifier = Modifier.padding(16.dp)) {
+                    // User initials in a circle
+                    Box(
+                        modifier = Modifier
+                            .size(40.dp)
+                            .background(Color.LightGray, shape = CircleShape)
+                            .wrapContentSize(Alignment.Center)
+                    ) {
+                        Text(
+                            getInitials(comment.user),
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.width(16.dp))
+
+                    Column {
+                        Text(comment.user, style = MaterialTheme.typography.bodyMedium)
+                        Text(
+                            formatDateTime(comment.date, comment.time),
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                    }
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    comment.comment,
+                    style = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier.padding(16.dp)
+                )
+            }
+        }
+    }
+}
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun MovieRaterTopAppBar(title: String, navController: NavController) {
+    CenterAlignedTopAppBar(
+        title = { Text(title, textAlign = TextAlign.Center) },
+        navigationIcon = {
+            IconButton(onClick = { navController.popBackStack() }) {
+                Icon(Icons.Filled.ArrowBack, contentDescription = "Back")
+            }
+        }
+    )
+}
 
 // Helper function to get user initials
 fun getInitials(username: String): String {
@@ -118,5 +228,28 @@ fun getInitials(username: String): String {
         parts[0][0] + "."
     } else {
         ""
+    }
+}
+
+// Helper function to format date and time
+fun formatDateTime(date: String, time: String): String {
+    val combinedDateTime = "$date $time"
+    val formatter = SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault())
+    val commentDateTime = formatter.parse(combinedDateTime)
+
+    val currentDateTime = Calendar.getInstance()
+
+    val diff = currentDateTime.timeInMillis - commentDateTime.time
+    val secondsAgo = diff / 1000
+    val minutesAgo = diff / (1000 * 60)
+    val hoursAgo = diff / (1000 * 60 * 60)
+    val daysAgo = diff / (1000 * 60 * 60 * 24)
+
+    return when {
+        secondsAgo < 60 -> "$secondsAgo secs ago"
+        minutesAgo < 60 -> "$minutesAgo mins ago"
+        hoursAgo < 24 -> "$hoursAgo hrs ago"
+        daysAgo == 1L -> "1 day ago"
+        else -> "$daysAgo days ago"
     }
 }

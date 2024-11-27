@@ -4,7 +4,10 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
@@ -12,11 +15,18 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -33,6 +43,8 @@ import androidx.navigation.navArgument
 import com.google.gson.Gson
 import com.it2161.dit99999x.assignment1.data.Comments
 import com.it2161.dit99999x.assignment1.data.MovieItem
+import com.it2161.dit99999x.assignment1.ui.components.formatDateTime
+import com.it2161.dit99999x.assignment1.ui.components.getInitials
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -76,23 +88,37 @@ class MainActivity : ComponentActivity() {
                             // Apply padding to the content
                             Column(
                                 modifier = Modifier
-                                    .padding(16.dp) // Apply padding to the content
-                                    .fillMaxWidth() // Make content fill the width
+                                    .padding(16.dp)
+                                    .fillMaxWidth()
                                     .padding(
-                                        top = WindowInsets.statusBars
-                                            .asPaddingValues()
-                                            .calculateTopPadding(),
-                                        bottom = WindowInsets.navigationBars
-                                            .asPaddingValues()
-                                            .calculateBottomPadding()
+                                        top = WindowInsets.statusBars.asPaddingValues().calculateTopPadding(),
+                                        bottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
                                     )
                             ) {
-                                Text("User: ${comment.user}", style = MaterialTheme.typography.titleMedium)
-                                Spacer(modifier = Modifier.height(8.dp)) // Add spacing
-                                Text("Comment: ${comment.comment}", style = MaterialTheme.typography.bodyMedium)
-                                Spacer(modifier = Modifier.height(8.dp)) // Add spacing
-                                Text("Date: ${comment.date}", style = MaterialTheme.typography.bodySmall)
-                                Text("Time: ${comment.time}", style = MaterialTheme.typography.bodySmall)
+                                Row(modifier = Modifier.padding(16.dp)) {
+                                    // User initials in a circle
+                                    Box(
+                                        modifier = Modifier
+                                            .size(40.dp)
+                                            .background(Color.LightGray, shape = CircleShape)
+                                            .wrapContentSize(Alignment.Center)
+                                    ) {
+                                        Text(
+                                            getInitials(comment.user),
+                                            style = MaterialTheme.typography.titleMedium,
+                                            fontWeight = FontWeight.Bold
+                                        )
+                                    }
+
+                                    Spacer(modifier = Modifier.width(16.dp))
+
+                                    Column {
+                                        Text(comment.user, style = MaterialTheme.typography.bodyMedium)
+                                        Text(formatDateTime(comment.date, comment.time), style = MaterialTheme.typography.bodySmall)
+                                    }
+                                }
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Text(comment.comment, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(16.dp))
                             }
                         }
 

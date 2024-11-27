@@ -2,8 +2,6 @@ package com.it2161.dit99999x.assignment1.ui.components
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -23,11 +21,13 @@ import com.it2161.dit99999x.assignment1.data.Comments
 import com.it2161.dit99999x.assignment1.data.MovieItem
 import java.text.SimpleDateFormat
 import java.util.*
+import com.it2161.dit99999x.assignment1.ui.components.CommentItem // Import CommentItem from MovieDetail.kt
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CommentMovieScreen(navController: NavController, movie: MovieItem) {
     var commentText by remember { mutableStateOf("") }
+    val scrollState = rememberScrollState()
 
     Scaffold(
         topBar = {
@@ -41,15 +41,15 @@ fun CommentMovieScreen(navController: NavController, movie: MovieItem) {
             )
         }
     ) { innerPadding ->
-        // Apply padding only to the content below the top bar
         Column(
             modifier = Modifier
-                .padding(innerPadding) // Apply inner padding from Scaffold
+                .padding(innerPadding)
                 .fillMaxSize()
-                .padding(16.dp) // Apply additional padding
-                .verticalScroll(rememberScrollState()) // Make content scrollable
+                .padding(16.dp)
+                .verticalScroll(scrollState),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Add Comment Section
+            // Comment Section
             Column(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally
@@ -58,8 +58,9 @@ fun CommentMovieScreen(navController: NavController, movie: MovieItem) {
                     bitmap = MovieRaterApplication.instance.getImgVector(movie.image).asImageBitmap(),
                     contentDescription = movie.title,
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .width(200.dp)
+                        .aspectRatio(0.95f) // Make it square
+                        .height(140.dp) // Maintain desired height
+                        .padding(16.dp),
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -97,24 +98,16 @@ fun CommentMovieScreen(navController: NavController, movie: MovieItem) {
             Spacer(modifier = Modifier.height(16.dp))
 
             // View Comments Section
-            LazyColumn(modifier = Modifier.weight(1f)) {
-                items(movie.comment.sortedByDescending { it.date + " " + it.time }) { comment ->
-                    CommentItem(comment)
+            Column {
+                for (comment in movie.comment.sortedByDescending { it.date + " " + it.time }) {
+                    CommentItem(comment, navController) // Use imported CommentItem
                 }
             }
         }
     }
 }
 
-@Composable
-fun CommentItem(comment: Comments) {
-    Column(modifier = Modifier.padding(8.dp)) {
-        Text(getInitials(comment.user), style = MaterialTheme.typography.titleMedium)
-        Text(formatDateTime(comment.date, comment.time), style = MaterialTheme.typography.bodySmall)
-        Spacer(modifier = Modifier.height(4.dp))
-        Text(comment.comment, style = MaterialTheme.typography.bodyMedium)
-    }
-}
+
 
 // Helper function to get user initials
 fun getInitials(username: String): String {

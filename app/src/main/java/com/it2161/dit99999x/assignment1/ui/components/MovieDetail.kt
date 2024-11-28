@@ -29,6 +29,11 @@ fun MovieDetailScreen(navController: NavController, movie: MovieItem) {
     var showMenu by remember { mutableStateOf(false) }
     val scrollState = rememberScrollState()
 
+    // Find the movie in MovieRaterApplication's data
+    val currentMovie = remember {
+        mutableStateOf(MovieRaterApplication.instance.data.find { it.title == movie.title } ?: movie)
+    }
+
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
@@ -80,12 +85,12 @@ fun MovieDetailScreen(navController: NavController, movie: MovieItem) {
             Spacer(modifier = Modifier.height(16.dp))
 
             // Display movie details from JSON
-            MovieDetails(movie)
+            MovieDetails(currentMovie.value)
 
             Spacer(modifier = Modifier.height(16.dp))
 
             // Display comments without LazyColumn
-            CommentsSection(movie.comment, navController)
+            CommentsSection(currentMovie.value.comment, movie, navController)
         }
     }
 }
@@ -103,11 +108,11 @@ fun MovieDetails(movie: MovieItem) {
 }
 
 @Composable
-fun CommentsSection(comments: List<Comments>, navController: NavController) {
+fun CommentsSection(comments: List<Comments>, movie: MovieItem, navController: NavController) {
     Text("Comments", style = MaterialTheme.typography.titleMedium, textAlign = TextAlign.Center, modifier = Modifier.padding(16.dp))
     Column(modifier = Modifier.padding(16.dp)) {
         for (comment in comments.sortedByDescending { it.date + " " + it.time }) {
-            CommentItem(comment, navController)
+            CommentItem(comment, movie, navController)
         }
     }
 }

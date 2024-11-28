@@ -53,12 +53,16 @@ class MainActivity : ComponentActivity() {
                             CommentMovieScreen(navController, movie) // Call CommentScreen with movie data
                         }
                         composable(
-                            "view_comments/{commentJson}",
-                            arguments = listOf(navArgument("commentJson") { type = NavType.StringType })
+                            "view_comments/{movieTitle}/{commentJson}",
+                            arguments = listOf(
+                                navArgument("movieTitle") { type = NavType.StringType },
+                                navArgument("commentJson") { type = NavType.StringType }
+                            )
                         ) { backStackEntry ->
+                            val movieTitle = backStackEntry.arguments?.getString("movieTitle") ?: "Movie"
                             val commentJson = backStackEntry.arguments?.getString("commentJson")
                             val comment = gson.fromJson(commentJson, Comments::class.java)
-                            ViewCommentScreen(navController, comment) // Call ViewCommentScreen with comment data
+                            ViewCommentScreen(navController, movieTitle, comment) // Call ViewCommentScreen with comment data and movieTitle
                         }
                         composable(
                             "add_comment/{movieJson}",

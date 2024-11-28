@@ -26,6 +26,11 @@ import com.it2161.dit99999x.assignment1.MovieRaterApplication
 import com.it2161.dit99999x.assignment1.data.Comments
 import com.it2161.dit99999x.assignment1.data.MovieItem
 import java.text.SimpleDateFormat
+import java.time.LocalDateTime
+import java.time.ZoneId
+import java.time.ZoneOffset
+import java.time.format.DateTimeFormatter
+import java.time.temporal.ChronoUnit
 import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -33,9 +38,15 @@ import java.util.*
 fun CommentMovieScreen(navController: NavController, movie: MovieItem) {
     var commentText by remember { mutableStateOf("") }
     val scrollState = rememberScrollState()
+    // Find the movie in MovieRaterApplication's data
+    var currentMovie by remember {
+        mutableStateOf(
+            MovieRaterApplication.instance.data.find { it.title == movie.title } ?: movie
+        )
+    }
 
     Scaffold(
-        topBar = { MovieRaterTopAppBar(movie.title, navController) }
+        topBar = { MovieRaterTopAppBar(currentMovie.title, navController) }
     ) { innerPadding ->
         Column(
             modifier = Modifier
@@ -75,16 +86,21 @@ fun CommentMovieScreen(navController: NavController, movie: MovieItem) {
                         user = MovieRaterApplication.instance.userProfile!!.userName, // Replace with actual username
                         comment = commentText,
                         date = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date()),
-                        time = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date())
+                        time = SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(Date())
                     )
-                    movie.comment = movie.comment.toMutableList().also { it.add(0, newComment) } // Add to the top of the list
-                    MovieRaterApplication.instance.data = MovieRaterApplication.instance.data.map {
-                        if (it.title == movie.title) {
-                            it.copy(comment = movie.comment)
+                    // Update movie comments in MovieRaterApplication's data
+                    val updatedData = MovieRaterApplication.instance.data.map { existingMovie ->
+                        if (existingMovie.title == currentMovie.title) {
+                            existingMovie.copy(comment = existingMovie.comment.toMutableList().also { it.add(0, newComment) })
                         } else {
-                            it
+                            existingMovie
                         }
                     }.toMutableList()
+                    MovieRaterApplication.instance.data = updatedData
+
+                    // Update currentMovie to trigger recomposition
+                    currentMovie = MovieRaterApplication.instance.data.find { it.title == currentMovie.title }!!
+
                     commentText = "" // Clear the comment text field
                 }) {
                     Text("Submit")
@@ -95,8 +111,8 @@ fun CommentMovieScreen(navController: NavController, movie: MovieItem) {
 
             // View Comments Section
             Column {
-                for (comment in movie.comment.sortedByDescending { it.date + " " + it.time }) {
-                    CommentItem(comment, navController) // Use imported CommentItem
+                for (comment in currentMovie.comment.sortedByDescending { it.date + " " + it.time }) {
+                    CommentItem(comment, movie, navController) // Use imported CommentItem
                 }
             }
         }
@@ -104,16 +120,16 @@ fun CommentMovieScreen(navController: NavController, movie: MovieItem) {
 }
 
 @Composable
-fun CommentItem(comment: Comments, navController: NavController) {
+fun CommentItem(comment: Comments, movie: MovieItem, navController: NavController) {
     val gson = Gson()
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(8.dp)
-            .clickable { navController.navigate("view_comments/${gson.toJson(comment)}") },
-        elevation = CardDefaults.cardElevation(
-            defaultElevation = 2.dp
-        )
+            .clickable {
+                navController.navigate("view_comments/${movie.title}/${gson.toJson(comment)}")
+            },
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Row(modifier = Modifier.padding(16.dp)) {
             Box(
@@ -151,25 +167,18 @@ fun CommentItem(comment: Comments, navController: NavController) {
 }
 
 @Composable
-fun ViewCommentScreen(navController: NavController, comment: Comments) {
+fun ViewCommentScreen(navController: NavController, movieTitle: String, comment: Comments) {
     Scaffold(
-        topBar = { MovieRaterTopAppBar("Comment Details", navController) }
+        topBar = { MovieRaterTopAppBar(movieTitle, navController) } // Set movieTitle as the top bar title
     ) { innerPadding ->
         Column(
             modifier = Modifier
-                .padding(innerPadding) // Apply inner padding from Scaffold
+                .padding(innerPadding)
                 .padding(16.dp)
                 .fillMaxWidth()
         ) {
             Column(
-                modifier = Modifier
-                    .padding(16.dp)
-                    .fillMaxWidth()
-                    .padding(
-                        top = WindowInsets.statusBars.asPaddingValues().calculateTopPadding(),
-                        bottom = WindowInsets.navigationBars.asPaddingValues()
-                            .calculateBottomPadding()
-                    )
+                modifier = Modifier.padding(16.dp)
             ) {
                 Row(modifier = Modifier.padding(16.dp)) {
                     // User initials in a circle
@@ -206,6 +215,7 @@ fun ViewCommentScreen(navController: NavController, comment: Comments) {
         }
     }
 }
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MovieRaterTopAppBar(title: String, navController: NavController) {
@@ -233,17 +243,17 @@ fun getInitials(username: String): String {
 
 // Helper function to format date and time
 fun formatDateTime(date: String, time: String): String {
-    val combinedDateTime = "$date $time"
-    val formatter = SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault())
-    val commentDateTime = formatter.parse(combinedDateTime)
+    val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+    val commentDateTime = LocalDateTime.parse("$date $time", formatter)
+        .atZone(ZoneId.systemDefault()) // Assuming the comment's timezone is the system's default
+        .toInstant() // No need to specify ZoneOffset here
 
-    val currentDateTime = Calendar.getInstance()
+    val currentDateTime = LocalDateTime.now().toInstant(ZoneOffset.UTC) // Specify ZoneOffset for current time
 
-    val diff = currentDateTime.timeInMillis - commentDateTime.time
-    val secondsAgo = diff / 1000
-    val minutesAgo = diff / (1000 * 60)
-    val hoursAgo = diff / (1000 * 60 * 60)
-    val daysAgo = diff / (1000 * 60 * 60 * 24)
+    val secondsAgo = ChronoUnit.SECONDS.between(commentDateTime, currentDateTime)
+    val minutesAgo = ChronoUnit.MINUTES.between(commentDateTime, currentDateTime)
+    val hoursAgo = ChronoUnit.HOURS.between(commentDateTime, currentDateTime)
+    val daysAgo = ChronoUnit.DAYS.between(commentDateTime, currentDateTime)
 
     return when {
         secondsAgo < 60 -> "$secondsAgo secs ago"

@@ -1,8 +1,5 @@
 package com.it2161.dit99999x.assignment1
 
-//import com.it2161.dit99999x.assignment1.data.Comments
-//import com.it2161.dit99999x.assignment1.data.MovieItem
-//import com.it2161.dit99999x.assignment1.data.UserProfile
 import android.app.Application
 import android.content.Context
 import android.graphics.Bitmap
@@ -106,7 +103,6 @@ class MovieRaterApplication : Application() {
                 )
             }
         } else {
-
             val file = File(context.filesDir, "movielist.dat")
             data = try {
                 val jsonString = file.readText()
@@ -118,8 +114,6 @@ class MovieRaterApplication : Application() {
                 mutableListOf<MovieItem>()
             }
         }
-
-
     }
 
     private fun saveListFile(context: Context) {

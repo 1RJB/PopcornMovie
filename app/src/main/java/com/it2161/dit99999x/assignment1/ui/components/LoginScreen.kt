@@ -118,14 +118,12 @@ fun LoginScreen(navController: NavController) {
     }
 }
 
-// Placeholder for login validation logic
 fun isValidLogin(username: String, password: String): Boolean {
     val userProfile = MovieRaterApplication.instance.userProfile
-    if (userProfile!!.userName.isNotEmpty()) {
+    if (userProfile != null && userProfile.userName.isNotEmpty()) { // Add null check here
         return userProfile.userName == username && userProfile.password == password
     }
     return username == "TestUser1" && password == "TestPassword1"
-
 }
 
 @Preview

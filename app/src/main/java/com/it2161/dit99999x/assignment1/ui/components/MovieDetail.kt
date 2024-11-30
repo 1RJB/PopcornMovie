@@ -3,8 +3,6 @@ package com.it2161.dit99999x.assignment1.ui.components
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.MoreVert
@@ -29,7 +27,6 @@ import com.it2161.dit99999x.assignment1.data.Comments
 @Composable
 fun MovieDetailScreen(navController: NavController, movie: MovieItem) {
     var showMenu by remember { mutableStateOf(false) }
-    val scrollState = rememberScrollState()
 
     // Find the movie in MovieRaterApplication's data
     val currentMovie = remember {
@@ -70,8 +67,7 @@ fun MovieDetailScreen(navController: NavController, movie: MovieItem) {
         LazyColumn(
             modifier = Modifier
                 .padding(innerPadding)
-                .fillMaxSize()
-                .verticalScroll(scrollState),
+                .fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             item {
@@ -107,25 +103,23 @@ fun MovieDetailScreen(navController: NavController, movie: MovieItem) {
 @Composable
 fun MovieDetails(movie: MovieItem) {
     Column(modifier = Modifier.padding(16.dp)) {
-        Text("Director: ${movie.director}", style = MaterialTheme.typography.bodyMedium)
-        Text("Release Date: ${movie.releaseDate}", style = MaterialTheme.typography.bodyMedium)
-        Text("Rating: ${movie.ratings_score} / 10", style = MaterialTheme.typography.bodyMedium)
-        Text("Actors: ${movie.actors.joinToString()}", style = MaterialTheme.typography.bodyMedium)
-        Text("Genre: ${movie.genre}", style = MaterialTheme.typography.bodyMedium)
-        Text("Length: ${movie.length} minutes", style = MaterialTheme.typography.bodyMedium)
-        Text("Synopsis: ${movie.synopsis}", style = MaterialTheme.typography.bodyMedium)
+            Text("Director: ${movie.director}", style = MaterialTheme.typography.bodyMedium)
+            Text("Release Date: ${movie.releaseDate}", style = MaterialTheme.typography.bodyMedium)
+            Text("Rating: ${movie.ratings_score} / 10", style = MaterialTheme.typography.bodyMedium)
+            Text("Actors: ${movie.actors.joinToString()}", style = MaterialTheme.typography.bodyMedium)
+            Text("Genre: ${movie.genre}", style = MaterialTheme.typography.bodyMedium)
+            Text("Length: ${movie.length} minutes", style = MaterialTheme.typography.bodyMedium)
+            Text("Synopsis: ${movie.synopsis}", style = MaterialTheme.typography.bodyMedium)
     }
 }
 
 @Composable
 fun CommentsSection(comments: List<Comments>, movie: MovieItem, navController: NavController) {
     Text("Comments", style = MaterialTheme.typography.titleLarge, textAlign = TextAlign.Center, fontSize = 20.sp, modifier = Modifier.padding(top=16.dp))
-    LazyColumn(modifier = Modifier.padding(16.dp)) {
-        item {
+    Column(modifier = Modifier.padding(16.dp)) {
             for (comment in comments.sortedByDescending { it.date + " " + it.time }) {
                 CommentItem(comment, movie, navController)
             }
-        }
     }
 }
 

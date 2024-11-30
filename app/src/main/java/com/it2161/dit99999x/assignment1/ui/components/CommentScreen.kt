@@ -5,9 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
@@ -38,7 +36,6 @@ import java.util.*
 @Composable
 fun CommentMovieScreen(navController: NavController, movie: MovieItem) {
     var commentText by remember { mutableStateOf("") }
-    val scrollState = rememberScrollState()
     // Find the movie in MovieRaterApplication's data
     var currentMovie by remember {
         mutableStateOf(
@@ -53,17 +50,16 @@ fun CommentMovieScreen(navController: NavController, movie: MovieItem) {
             modifier = Modifier
                 .padding(innerPadding)
                 .fillMaxSize()
-                .padding(16.dp)
-                .verticalScroll(scrollState),
+                .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             item {
                 // Comment Section
-                LazyColumn(
+                Column(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    item {
+
                         Image(
                             bitmap = MovieRaterApplication.instance.getImgVector(movie.image)
                                 .asImageBitmap(),
@@ -75,9 +71,9 @@ fun CommentMovieScreen(navController: NavController, movie: MovieItem) {
                         )
 
                         Spacer(modifier = Modifier.height(16.dp))
-                    }
 
-                    item {
+
+
                         OutlinedTextField(
                             value = commentText,
                             onValueChange = { commentText = it },
@@ -86,9 +82,9 @@ fun CommentMovieScreen(navController: NavController, movie: MovieItem) {
                         )
 
                         Spacer(modifier = Modifier.height(16.dp))
-                    }
 
-                    item {
+
+
                         Button(onClick = {
                             val newComment = Comments(
                                 user = MovieRaterApplication.instance.userProfile!!.userName,
@@ -128,7 +124,6 @@ fun CommentMovieScreen(navController: NavController, movie: MovieItem) {
                         }) {
                             Text("Submit")
                         }
-                    }
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -136,11 +131,9 @@ fun CommentMovieScreen(navController: NavController, movie: MovieItem) {
 
             item {
                 // View Comments Section
-                LazyColumn {
+                Column {
                     for (comment in currentMovie.comment.sortedByDescending { it.date + " " + it.time }) {
-                        item {
-                            CommentItem(comment, movie, navController) // Use imported CommentItem
-                        }
+                        CommentItem(comment, movie, navController) // Use imported CommentItem
                     }
                 }
             }

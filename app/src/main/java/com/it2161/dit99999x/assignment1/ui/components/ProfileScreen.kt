@@ -1,6 +1,8 @@
 package com.it2161.dit99999x.assignment1.ui.components
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -14,17 +16,22 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.it2161.dit99999x.assignment1.MovieRaterApplication
 import com.it2161.dit99999x.assignment1.data.UserProfile
+import com.it2161.dit99999x.assignment1.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -128,7 +135,7 @@ fun ProfileScreen(navController: NavController) {
                     ProfileDetailRow("Gender", userProfile.value.gender)
                     ProfileDetailRow("Mobile", userProfile.value.mobile)
                     ProfileDetailRow("Email", userProfile.value.email)
-                    ProfileDetailRow("Receive Updates", if (userProfile.value.updates) "Yes" else "No")
+                    ProfileDetailRow("To receive updates", if (userProfile.value.updates) "Yes" else "No")
                 }
             }
         }
@@ -154,92 +161,219 @@ fun EditProfileContent(userProfile: MutableState<UserProfile>, onPasswordError: 
     var passwordError by remember { mutableStateOf(false) } // State for password error
     var passwordVisible by remember { mutableStateOf(false) }
     var confirmPasswordVisible by remember { mutableStateOf(false) }
-    var showEmptyFieldError by remember { mutableStateOf(false) } // State for empty field error
+    // Validation states for fields
+    var userNameError by remember { mutableStateOf("") }
+    var mobileNumberError by remember { mutableStateOf("") }
+    var emailError by remember { mutableStateOf("") }
+    var yearOfBirthError by remember { mutableStateOf("") }
+    var genderError by remember { mutableStateOf("") }
 
-    // Update the password fields only when user decides to change the password
-    OutlinedTextField(
-        value = userProfile.value.password,
-        onValueChange = {
-            userProfile.value = userProfile.value.copy(password = it)
-            passwordError = it != confirmPassword // Check if passwords match
-            onPasswordError(passwordError) // Notify parent composable
-        },
-        label = { Text("Password") },
-        visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-        trailingIcon = {
-            val image = if (passwordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
-            IconButton(onClick = { passwordVisible = !passwordVisible }) {
-                Icon(imageVector = image, contentDescription = null)
-            }
-        },
-        modifier = Modifier.fillMaxWidth(),
-        isError = passwordError // Display error state if passwords don't match
-    )
+    // Validation patterns for each rule
+    val usernamePattern = "^[a-zA-Z0-9]{3,12}$".toRegex() // Alphanumeric, 3-12 characters
+    val mobileNumberPattern = "^\\d{8}$".toRegex() // Exactly 8 digits
+    val emailPattern = "^[A-Za-z0-9+_.-]+@(.+)$".toRegex() // Basic email pattern
 
-    OutlinedTextField(
-        value = confirmPassword,
-        onValueChange = {
-            confirmPassword = it
-            passwordError = userProfile.value.password != it // Check if passwords match
-            onPasswordError(passwordError) // Notify parent composable
-        },
-        label = { Text("Confirm Password") },
-        visualTransformation = if (confirmPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-        trailingIcon = {
-            val image = if (confirmPasswordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
-            IconButton(onClick = { confirmPasswordVisible = !confirmPasswordVisible }) {
-                Icon(imageVector = image, contentDescription = null)
-            }
-        },
-        modifier = Modifier.fillMaxWidth(),
-        isError = passwordError // Display error state if passwords don't match
-    )
-
-    // Input Fields for Profile Details
-    OutlinedTextField(
-        value = userProfile.value.userName,
-        onValueChange = { userProfile.value = userProfile.value.copy(userName = it) },
-        label = { Text("Name") },
-        modifier = Modifier.fillMaxWidth()
-    )
-
-    OutlinedTextField(
-        value = userProfile.value.yob,
-        onValueChange = { userProfile.value = userProfile.value.copy(yob = it) },
-        label = { Text("Year of Birth") },
-        modifier = Modifier.fillMaxWidth()
-    )
-
-    OutlinedTextField(
-        value = userProfile.value.gender,
-        onValueChange = { userProfile.value = userProfile.value.copy(gender = it) },
-        label = { Text("Gender") },
-        modifier = Modifier.fillMaxWidth()
-    )
-
-    OutlinedTextField(
-        value = userProfile.value.mobile,
-        onValueChange = { userProfile.value = userProfile.value.copy(mobile = it) },
-        label = { Text("Mobile Number") },
-        modifier = Modifier.fillMaxWidth()
-    )
-
-    OutlinedTextField(
-        value = userProfile.value.email,
-        onValueChange = { userProfile.value = userProfile.value.copy(email = it) },
-        label = { Text("Email") },
-        modifier = Modifier.fillMaxWidth()
-    )
-
-    Row(
-        verticalAlignment = Alignment.CenterVertically
+    Column(
+        modifier = Modifier.fillMaxWidth().padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Checkbox(
-            checked = userProfile.value.updates,
-            onCheckedChange = { userProfile.value = userProfile.value.copy(updates = it) }
+        // Avatar Selection
+        Text("Select Avatar", style = MaterialTheme.typography.titleMedium)
+        Row(
+            horizontalArrangement = Arrangement.SpaceEvenly,
+            modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)
+        ) {
+            AvatarOption(R.drawable.avatar_1, userProfile)
+            AvatarOption(R.drawable.avatar_2, userProfile)
+            AvatarOption(R.drawable.avatar_3, userProfile)
+        }
+
+        OutlinedTextField(
+            value = userProfile.value.userName,
+            onValueChange = {
+                userProfile.value = userProfile.value.copy(userName = it)
+                userNameError = when {
+                    it.isEmpty() -> "Username is required"
+                    !it.matches(usernamePattern) -> "Username must be 3-12 characters, alphanumeric only"
+                    else -> ""
+                }
+            },
+            label = { Text(buildAnnotatedString {
+                append("Name")
+                withStyle(style = SpanStyle(color = Color.Red)) {
+                    append(" *")
+                }
+            }) },
+            modifier = Modifier.fillMaxWidth(),
+            isError = userNameError.isNotEmpty()
         )
-        Text(text = "Receive updates via email")
+        if (userNameError.isNotEmpty()) {
+            Text(userNameError, color = MaterialTheme.colorScheme.error)
+        }
+
+        // Update the password fields only when user decides to change the password
+        OutlinedTextField(
+            value = userProfile.value.password,
+            onValueChange = {
+                userProfile.value = userProfile.value.copy(password = it)
+                passwordError = it != confirmPassword // Check if passwords match
+                onPasswordError(passwordError) // Notify parent composable
+            },
+            label = { Text(buildAnnotatedString {
+                append("Password")
+                withStyle(style = SpanStyle(color = Color.Red)) {
+                    append(" *")
+                }
+            }) },
+            visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+            trailingIcon = {
+                val image = if (passwordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
+                IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                    Icon(imageVector = image, contentDescription = null)
+                }
+            },
+            modifier = Modifier.fillMaxWidth(),
+            isError = passwordError // Display error state if passwords don't match
+        )
+
+        OutlinedTextField(
+            value = confirmPassword,
+            onValueChange = {
+                confirmPassword = it
+                passwordError = userProfile.value.password != it // Check if passwords match
+                onPasswordError(passwordError) // Notify parent composable
+            },
+            label = { Text(buildAnnotatedString {
+                append("Confirm Password")
+                withStyle(style = SpanStyle(color = Color.Red)) {
+                    append(" *")
+                }
+            }) },
+            visualTransformation = if (confirmPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+            trailingIcon = {
+                val image = if (confirmPasswordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
+                IconButton(onClick = { confirmPasswordVisible = !confirmPasswordVisible }) {
+                    Icon(imageVector = image, contentDescription = null)
+                }
+            },
+            modifier = Modifier.fillMaxWidth(),
+            isError = passwordError // Display error state if passwords don't match
+        )
+
+        OutlinedTextField(
+            value = userProfile.value.yob,
+            onValueChange = {
+                userProfile.value = userProfile.value.copy(yob = it)
+                yearOfBirthError = if (it.isEmpty()) "Year of birth is required" else ""
+            },
+            label = { Text(buildAnnotatedString {
+                append("Year of Birth")
+                withStyle(style = SpanStyle(color = Color.Red)) {
+                    append(" *")
+                }
+            }) },
+            modifier = Modifier.fillMaxWidth(),
+            isError = yearOfBirthError.isNotEmpty()
+        )
+        if (yearOfBirthError.isNotEmpty()) {
+            Text(yearOfBirthError, color = MaterialTheme.colorScheme.error)
+        }
+
+        OutlinedTextField(
+            value = userProfile.value.gender,
+            onValueChange = {
+                userProfile.value = userProfile.value.copy(gender = it)
+                genderError = if (it.isEmpty()) "Gender is required" else ""
+            },
+            label = { Text(buildAnnotatedString {
+                append("Gender")
+                withStyle(style = SpanStyle(color = Color.Red)) {
+                    append(" *")
+                }
+            })},
+            modifier = Modifier.fillMaxWidth(),
+            isError = genderError.isNotEmpty()
+        )
+        if (genderError.isNotEmpty()) {
+            Text(genderError, color = MaterialTheme.colorScheme.error)
+        }
+
+        OutlinedTextField(
+            value = userProfile.value.mobile,
+            onValueChange = {
+                userProfile.value = userProfile.value.copy(mobile = it)
+                mobileNumberError = when {
+                    it.isEmpty() -> "Mobile number is required"
+                    !it.matches(mobileNumberPattern) -> "Mobile number must be 8 digits"
+                    else -> ""
+                }
+            },
+            label = { Text(buildAnnotatedString {
+                append("Mobile Number")
+                withStyle(style = SpanStyle(color = Color.Red)) {
+                    append(" *")
+                }
+            }) },
+            modifier = Modifier.fillMaxWidth(),
+            isError = mobileNumberError.isNotEmpty()
+        )
+        if (mobileNumberError.isNotEmpty()) {
+            Text(mobileNumberError, color = MaterialTheme.colorScheme.error)
+        }
+
+        OutlinedTextField(
+            value = userProfile.value.email,
+            onValueChange = {
+                userProfile.value = userProfile.value.copy(email = it)
+                emailError = when {
+                    it.isEmpty() -> "Email is required"
+                    !it.matches(emailPattern) -> "Invalid email format"
+                    else -> ""
+                }
+            },
+            label = { Text(buildAnnotatedString {
+                append("Email")
+                withStyle(style = SpanStyle(color = Color.Red)) {
+                    append(" *")
+                }
+            }) },
+            modifier = Modifier.fillMaxWidth(),
+            isError = emailError.isNotEmpty()
+        )
+        if (emailError.isNotEmpty()) {
+            Text(emailError, color = MaterialTheme.colorScheme.error)
+        }
+
+        Row(
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Checkbox(
+                checked = userProfile.value.updates,
+                onCheckedChange = { userProfile.value = userProfile.value.copy(updates = it) }
+            )
+            Text(text = "Receive updates via email")
+        }
     }
+}
+
+@Composable
+fun AvatarOption(avatarResId: Int, userProfile: MutableState<UserProfile>) {
+    val isSelected = userProfile.value.profilePicture == avatarResId
+    Image(
+        painter = painterResource(id = avatarResId),
+        contentDescription = "Avatar Option",
+        modifier = Modifier
+            .size(80.dp)
+            .padding(4.dp)
+            .clickable {
+                userProfile.value = userProfile.value.copy(profilePicture = avatarResId)
+            }
+            .border(
+                width = if (isSelected) 2.dp else 0.dp,
+                color = if (isSelected) Color.Black else Color.Transparent
+            ),
+        contentScale = ContentScale.Crop
+    )
 }
 
 @Preview

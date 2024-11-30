@@ -2,9 +2,8 @@ package com.it2161.dit99999x.assignment1.ui.components
 
 import android.widget.Toast
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Visibility
@@ -35,7 +34,6 @@ import java.util.*
 @Composable
 fun RegisterUserScreen(navController: NavController) {
     val context = LocalContext.current
-    val scrollState = rememberScrollState()
     var userName by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
@@ -116,219 +114,278 @@ fun RegisterUserScreen(navController: NavController) {
         return isValid
     }
 
-    Column(
-        modifier = Modifier.fillMaxSize().padding(16.dp)
-        .verticalScroll(scrollState),
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
         verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.CenterHorizontally
-
     ) {
-        Text(text = "Register", style = MaterialTheme.typography.headlineMedium, modifier = Modifier
-            .padding(top = 80.dp))
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Username input with validation
-        OutlinedTextField(
-            value = userName,
-            onValueChange = {
-                userName = it
-                userNameError = when {
-                    it.isEmpty() -> "Username is required"
-                    !it.matches(usernamePattern) -> "Username must be 3-12 characters, alphanumeric only"
-                    else -> ""
-                }
-            },
-            label = { Text(buildAnnotatedString {
-                append("Username")
-                withStyle(style = SpanStyle(color = Color.Red)) {
-                    append(" *")
-                }
-            }) },
-            placeholder = { Text("Enter username") },
-            isError = userNameError.isNotEmpty(),
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 15.dp)
-        )
-        if (userNameError.isNotEmpty()) {
-            Text(userNameError, color = MaterialTheme.colorScheme.error)
-        }
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        // Password input with validation
-        OutlinedTextField(
-            value = password,
-            onValueChange = {
-                password = it
-                passwordError = when {
-                    it.length < 8 -> "Password must be at least 8 characters long"
-                    !it.any { char -> char.isUpperCase() } -> "Password must contain at least 1 uppercase letter"
-                    !it.any { char -> char.isLowerCase() } -> "Password must contain at least 1 lowercase letter"
-                    !it.any { char -> char.isDigit() } -> "Password must contain at least 1 number"
-                    !it.any { char -> "!@#$%^&*()_+-=<>?/.,;:'\"".contains(char) } -> "Password must contain at least 1 special character"
-                    else -> ""
-                }
-            },
-            label = { Text(buildAnnotatedString {
-                append("Password")
-                withStyle(style = SpanStyle(color = Color.Red)) {
-                    append(" *")
-                }
-            }) },
-            placeholder = { Text("Enter password") },
-            visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-            trailingIcon = {
-                val image = if (passwordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
-                IconButton(onClick = { passwordVisible = !passwordVisible }) {
-                    Icon(imageVector = image, contentDescription = if (passwordVisible) "Hide password" else "Show password")
-                }
-            },
-            isError = passwordError.isNotEmpty(),
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 15.dp)
-        )
-        if (passwordError.isNotEmpty()) {
-            Text(passwordError, color = MaterialTheme.colorScheme.error)
-        }
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        // Confirm Password input with validation
-        OutlinedTextField(
-            value = confirmPassword,
-            onValueChange = {
-                confirmPassword = it
-                confirmPasswordError = if (confirmPassword != password) "Passwords do not match" else ""
-            },
-            label = { Text(buildAnnotatedString {
-                append("Confirm Password")
-                withStyle(style = SpanStyle(color = Color.Red)) {
-                    append(" *")
-                }
-            }) },
-            placeholder = { Text("Enter password") },
-            visualTransformation = if (confirmPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-            trailingIcon = {
-                val image = if (confirmPasswordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
-                IconButton(onClick = { confirmPasswordVisible = !confirmPasswordVisible }) {
-                    Icon(imageVector = image, contentDescription = if (confirmPasswordVisible) "Hide password" else "Show password")
-                }
-            },
-            isError = confirmPasswordError.isNotEmpty(),
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 15.dp)
-        )
-        if (confirmPasswordError.isNotEmpty()) {
-            Text(confirmPasswordError, color = MaterialTheme.colorScheme.error)
-        }
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        // Year of birth input with validation
-        DropdownMenuField(yearOfBirth) { selectedYear ->
-            yearOfBirth = selectedYear
-            yearOfBirthError = if (selectedYear.isEmpty()) "Year of birth is required" else ""
-        }
-        if (yearOfBirthError.isNotEmpty()) {
-            Text(yearOfBirthError, color = MaterialTheme.colorScheme.error)
-        }
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        // Gender selection with validation
-        GenderSelection(gender) { selectedGender ->
-            gender = selectedGender
-            genderError = if (selectedGender.isEmpty()) "Gender is required" else ""
-        }
-        if (genderError.isNotEmpty()) {
-            Text(genderError, color = MaterialTheme.colorScheme.error)
-        }
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        // Mobile number input with validation
-        OutlinedTextField(
-            value = mobileNumber,
-            onValueChange = {
-                mobileNumber = it
-                mobileNumberError = if (it.length != 8) "Mobile number must be 8 digits" else ""
-            },
-            label = { Text(buildAnnotatedString {
-                append("Mobile Number")
-                withStyle(style = SpanStyle(color = Color.Red)) {
-                    append(" *")
-                }
-            }) },
-            placeholder = { Text("Enter mobile number") },
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-            isError = mobileNumberError.isNotEmpty(),
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 15.dp)
-        )
-        if (mobileNumberError.isNotEmpty()) {
-            Text(mobileNumberError, color = MaterialTheme.colorScheme.error)
-        }
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        // Email input with validation
-        OutlinedTextField(
-            value = email,
-            onValueChange = {
-                email = it
-                emailError = if (!it.matches(emailPattern)) "Invalid email format" else ""
-            },
-            label = { Text(buildAnnotatedString {
-                append("Email")
-                withStyle(style = SpanStyle(color = Color.Red)) {
-                    append(" *")
-                }
-            }) },
-            placeholder = { Text("Enter email") },
-            isError = emailError.isNotEmpty(),
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 15.dp)
-        )
-        if (emailError.isNotEmpty()) {
-            Text(emailError, color = MaterialTheme.colorScheme.error)
-        }
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        Row(
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Checkbox(
-                checked = receiveUpdates,
-                onCheckedChange = { receiveUpdates = it }
+        item {
+            Text(
+                text = "Register",
+                style = MaterialTheme.typography.headlineMedium,
+                modifier = Modifier
+                    .padding(top = 80.dp)
             )
-            Text(text = "To receive updates")
+
+            Spacer(modifier = Modifier.height(16.dp))
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        item {
+            // Username input with validation
+            OutlinedTextField(
+                value = userName,
+                onValueChange = {
+                    userName = it
+                    userNameError = when {
+                        it.isEmpty() -> "Username is required"
+                        !it.matches(usernamePattern) -> "Username must be 3-12 characters, alphanumeric only"
+                        else -> ""
+                    }
+                },
+                label = {
+                    Text(buildAnnotatedString {
+                        append("Username")
+                        withStyle(style = SpanStyle(color = Color.Red)) {
+                            append(" *")
+                        }
+                    })
+                },
+                placeholder = { Text("Enter username") },
+                isError = userNameError.isNotEmpty(),
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 15.dp)
+            )
+            if (userNameError.isNotEmpty()) {
+                Text(userNameError, color = MaterialTheme.colorScheme.error)
+            }
 
-        // Register button with validation
-        Button(
-            onClick = {
-                if (validateFields()) {
-                    // Handle registration logic (successful)
-                    Toast.makeText(context, "Registration Successful!", Toast.LENGTH_SHORT).show()
-                    MovieRaterApplication.instance.userProfile = UserProfile(userName, password, email, gender, mobileNumber, receiveUpdates, yearOfBirth)
-                    navController.navigate("landing")
-                } else {
-                    Toast.makeText(context, "Please fix the errors before proceeding.", Toast.LENGTH_SHORT).show()
-                }
-            },
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 15.dp)
-        ) {
-            Text("Register")
+            Spacer(modifier = Modifier.height(8.dp))
         }
 
-        Spacer(modifier = Modifier.height(1.dp))
+        item {
+            // Password input with validation
+            OutlinedTextField(
+                value = password,
+                onValueChange = {
+                    password = it
+                    passwordError = when {
+                        it.length < 8 -> "Password must be at least 8 characters long"
+                        !it.any { char -> char.isUpperCase() } -> "Password must contain at least 1 uppercase letter"
+                        !it.any { char -> char.isLowerCase() } -> "Password must contain at least 1 lowercase letter"
+                        !it.any { char -> char.isDigit() } -> "Password must contain at least 1 number"
+                        !it.any { char -> "!@#$%^&*()_+-=<>?/.,;:'\"".contains(char) } -> "Password must contain at least 1 special character"
+                        else -> ""
+                    }
+                },
+                label = {
+                    Text(buildAnnotatedString {
+                        append("Password")
+                        withStyle(style = SpanStyle(color = Color.Red)) {
+                            append(" *")
+                        }
+                    })
+                },
+                placeholder = { Text("Enter password") },
+                visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                trailingIcon = {
+                    val image =
+                        if (passwordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
+                    IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                        Icon(
+                            imageVector = image,
+                            contentDescription = if (passwordVisible) "Hide password" else "Show password"
+                        )
+                    }
+                },
+                isError = passwordError.isNotEmpty(),
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 15.dp)
+            )
+            if (passwordError.isNotEmpty()) {
+                Text(passwordError, color = MaterialTheme.colorScheme.error)
+            }
 
-        // Cancel and navigate back to Login screen
-        Button(
-            onClick = { navController.navigate("login") },
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 15.dp)
-        ) {
-            Text("Cancel")
+            Spacer(modifier = Modifier.height(8.dp))
         }
+
+        item {
+            // Confirm Password input with validation
+            OutlinedTextField(
+                value = confirmPassword,
+                onValueChange = {
+                    confirmPassword = it
+                    confirmPasswordError =
+                        if (confirmPassword != password) "Passwords do not match" else ""
+                },
+                label = {
+                    Text(buildAnnotatedString {
+                        append("Confirm Password")
+                        withStyle(style = SpanStyle(color = Color.Red)) {
+                            append(" *")
+                        }
+                    })
+                },
+                placeholder = { Text("Enter password") },
+                visualTransformation = if (confirmPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                trailingIcon = {
+                    val image =
+                        if (confirmPasswordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
+                    IconButton(onClick = { confirmPasswordVisible = !confirmPasswordVisible }) {
+                        Icon(
+                            imageVector = image,
+                            contentDescription = if (confirmPasswordVisible) "Hide password" else "Show password"
+                        )
+                    }
+                },
+                isError = confirmPasswordError.isNotEmpty(),
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 15.dp)
+            )
+            if (confirmPasswordError.isNotEmpty()) {
+                Text(confirmPasswordError, color = MaterialTheme.colorScheme.error)
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+        }
+
+        item {
+            // Year of birth input with validation
+            DropdownMenuField(yearOfBirth) { selectedYear ->
+                yearOfBirth = selectedYear
+                yearOfBirthError = if (selectedYear.isEmpty()) "Year of birth is required" else ""
+            }
+            if (yearOfBirthError.isNotEmpty()) {
+                Text(yearOfBirthError, color = MaterialTheme.colorScheme.error)
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+        }
+
+        item {
+            // Gender selection with validation
+            GenderSelection(gender) { selectedGender ->
+                gender = selectedGender
+                genderError = if (selectedGender.isEmpty()) "Gender is required" else ""
+            }
+            if (genderError.isNotEmpty()) {
+                Text(genderError, color = MaterialTheme.colorScheme.error)
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+        }
+
+        item {
+            // Mobile number input with validation
+            OutlinedTextField(
+                value = mobileNumber,
+                onValueChange = {
+                    mobileNumber = it
+                    mobileNumberError = if (it.length != 8) "Mobile number must be 8 digits" else ""
+                },
+                label = {
+                    Text(buildAnnotatedString {
+                        append("Mobile Number")
+                        withStyle(style = SpanStyle(color = Color.Red)) {
+                            append(" *")
+                        }
+                    })
+                },
+                placeholder = { Text("Enter mobile number") },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                isError = mobileNumberError.isNotEmpty(),
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 15.dp)
+            )
+            if (mobileNumberError.isNotEmpty()) {
+                Text(mobileNumberError, color = MaterialTheme.colorScheme.error)
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+        }
+
+        item {
+            // Email input with validation
+            OutlinedTextField(
+                value = email,
+                onValueChange = {
+                    email = it
+                    emailError = if (!it.matches(emailPattern)) "Invalid email format" else ""
+                },
+                label = {
+                    Text(buildAnnotatedString {
+                        append("Email")
+                        withStyle(style = SpanStyle(color = Color.Red)) {
+                            append(" *")
+                        }
+                    })
+                },
+                placeholder = { Text("Enter email") },
+                isError = emailError.isNotEmpty(),
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 15.dp)
+            )
+            if (emailError.isNotEmpty()) {
+                Text(emailError, color = MaterialTheme.colorScheme.error)
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+        }
+
+        item {
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Checkbox(
+                    checked = receiveUpdates,
+                    onCheckedChange = { receiveUpdates = it }
+                )
+                Text(text = "To receive updates")
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+        }
+
+        item {
+            // Register button with validation
+            Button(
+                onClick = {
+                    if (validateFields()) {
+                        // Handle registration logic (successful)
+                        Toast.makeText(context, "Registration Successful!", Toast.LENGTH_SHORT)
+                            .show()
+                        MovieRaterApplication.instance.userProfile = UserProfile(
+                            userName,
+                            password,
+                            email,
+                            gender,
+                            mobileNumber,
+                            receiveUpdates,
+                            yearOfBirth
+                        )
+                        navController.navigate("landing")
+                    } else {
+                        Toast.makeText(
+                            context,
+                            "Please fix the errors before proceeding.",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                },
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 15.dp)
+            ) {
+                Text("Register")
+            }
+
+            Spacer(modifier = Modifier.height(1.dp))
+        }
+
+        item {
+            // Cancel and navigate back to Login screen
+            Button(
+                onClick = { navController.navigate("login") },
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 15.dp)
+            ) {
+                Text("Cancel")
+            }
+        }
+
     }
 }
 

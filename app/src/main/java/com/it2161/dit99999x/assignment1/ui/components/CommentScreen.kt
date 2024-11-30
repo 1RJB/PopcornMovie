@@ -4,6 +4,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
@@ -48,7 +49,7 @@ fun CommentMovieScreen(navController: NavController, movie: MovieItem) {
     Scaffold(
         topBar = { MovieRaterTopAppBar(currentMovie.title, navController) }
     ) { innerPadding ->
-        Column(
+        LazyColumn(
             modifier = Modifier
                 .padding(innerPadding)
                 .fillMaxSize()
@@ -56,68 +57,91 @@ fun CommentMovieScreen(navController: NavController, movie: MovieItem) {
                 .verticalScroll(scrollState),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Comment Section
-            Column(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Image(
-                    bitmap = MovieRaterApplication.instance.getImgVector(movie.image).asImageBitmap(),
-                    contentDescription = movie.title,
-                    modifier = Modifier
-                        .aspectRatio(0.95f)
-                        .height(140.dp)
-                        .padding(16.dp),
-                )
+            item {
+                // Comment Section
+                LazyColumn(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    item {
+                        Image(
+                            bitmap = MovieRaterApplication.instance.getImgVector(movie.image)
+                                .asImageBitmap(),
+                            contentDescription = movie.title,
+                            modifier = Modifier
+                                .aspectRatio(0.95f)
+                                .height(140.dp)
+                                .padding(16.dp),
+                        )
 
-                Spacer(modifier = Modifier.height(16.dp))
+                        Spacer(modifier = Modifier.height(16.dp))
+                    }
 
-                OutlinedTextField(
-                    value = commentText,
-                    onValueChange = { commentText = it },
-                    label = { Text("Add comment") },
-                    modifier = Modifier.fillMaxWidth()
-                )
+                    item {
+                        OutlinedTextField(
+                            value = commentText,
+                            onValueChange = { commentText = it },
+                            label = { Text("Add comment") },
+                            modifier = Modifier.fillMaxWidth()
+                        )
 
-                Spacer(modifier = Modifier.height(16.dp))
+                        Spacer(modifier = Modifier.height(16.dp))
+                    }
 
-                Button(onClick = {
-                    val newComment = Comments(
-                        user = MovieRaterApplication.instance.userProfile!!.userName,
-                        comment = commentText,
-                        date = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date()),
-                        time = SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(Date())
-                    )
-                    // Update movie comments in MovieRaterApplication's data
-                    val updatedData = MovieRaterApplication.instance.data.map { existingMovie ->
-                        if (existingMovie.title == currentMovie.title) {
-                            existingMovie.copy(comment = existingMovie.comment.toMutableList().also { it.add(0, newComment) })
-                        } else {
-                            existingMovie
+                    item {
+                        Button(onClick = {
+                            val newComment = Comments(
+                                user = MovieRaterApplication.instance.userProfile!!.userName,
+                                comment = commentText,
+                                date = SimpleDateFormat(
+                                    "yyyy-MM-dd",
+                                    Locale.getDefault()
+                                ).format(Date()),
+                                time = SimpleDateFormat(
+                                    "HH:mm:ss",
+                                    Locale.getDefault()
+                                ).format(Date())
+                            )
+                            // Update movie comments in MovieRaterApplication's data
+                            val updatedData =
+                                MovieRaterApplication.instance.data.map { existingMovie ->
+                                    if (existingMovie.title == currentMovie.title) {
+                                        existingMovie.copy(
+                                            comment = existingMovie.comment.toMutableList()
+                                                .also { it.add(0, newComment) })
+                                    } else {
+                                        existingMovie
+                                    }
+                                }.toMutableList()
+                            MovieRaterApplication.instance.data = updatedData
+
+                            // Update currentMovie to trigger recomposition
+                            currentMovie =
+                                MovieRaterApplication.instance.data.find { it.title == currentMovie.title }!!
+
+                            commentText = "" // Clear the comment text field
+
+                            // Navigate to the movie details page
+                            val gson = Gson()
+                            val movieJson = gson.toJson(currentMovie)
+                            navController.navigate("movieDetail/$movieJson") // Navigate to movie details
+                        }) {
+                            Text("Submit")
                         }
-                    }.toMutableList()
-                    MovieRaterApplication.instance.data = updatedData
-
-                    // Update currentMovie to trigger recomposition
-                    currentMovie = MovieRaterApplication.instance.data.find { it.title == currentMovie.title }!!
-
-                    commentText = "" // Clear the comment text field
-
-                    // Navigate to the movie details page
-                    val gson = Gson()
-                    val movieJson = gson.toJson(currentMovie)
-                    navController.navigate("movieDetail/$movieJson") // Navigate to movie details
-                }) {
-                    Text("Submit")
+                    }
                 }
+
+                Spacer(modifier = Modifier.height(16.dp))
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // View Comments Section
-            Column {
-                for (comment in currentMovie.comment.sortedByDescending { it.date + " " + it.time }) {
-                    CommentItem(comment, movie, navController) // Use imported CommentItem
+            item {
+                // View Comments Section
+                LazyColumn {
+                    for (comment in currentMovie.comment.sortedByDescending { it.date + " " + it.time }) {
+                        item {
+                            CommentItem(comment, movie, navController) // Use imported CommentItem
+                        }
+                    }
                 }
             }
         }
@@ -173,21 +197,16 @@ fun CommentItem(comment: Comments, movie: MovieItem, navController: NavControlle
 
 @Composable
 fun ViewCommentScreen(navController: NavController, movieTitle: String, comment: Comments) {
-    val scrollState = rememberScrollState()
     Scaffold(
         topBar = { MovieRaterTopAppBar(movieTitle, navController) } // Set movieTitle as the top bar title
     ) { innerPadding ->
-
-        Column(
+        LazyColumn(
             modifier = Modifier
                 .padding(innerPadding)
                 .padding(16.dp)
                 .fillMaxWidth()
-                .verticalScroll(scrollState),
         ) {
-            Column(
-                modifier = Modifier.padding(16.dp)
-            ) {
+            item {
                 Row(modifier = Modifier.padding(16.dp)) {
                     // User initials in a circle
                     Box(
@@ -213,12 +232,14 @@ fun ViewCommentScreen(navController: NavController, movieTitle: String, comment:
                         )
                     }
                 }
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    comment.comment,
-                    style = MaterialTheme.typography.bodyMedium,
-                    modifier = Modifier.padding(16.dp)
-                )
+            }
+            item{
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                comment.comment,
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.padding(16.dp)
+            )
             }
         }
     }

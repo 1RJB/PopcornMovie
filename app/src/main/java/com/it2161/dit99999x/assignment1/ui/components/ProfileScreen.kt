@@ -4,8 +4,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.MoreVert
@@ -44,7 +43,6 @@ fun ProfileScreen(navController: NavController) {
     val configuration = LocalConfiguration.current
     val screenHeight = configuration.screenHeightDp.dp
     val imageHeight = screenHeight / 3
-    val scrollState = rememberScrollState()
 
     var showMenu by remember { mutableStateOf(false) }
     var passwordError by remember { mutableStateOf(false) }
@@ -122,9 +120,7 @@ fun ProfileScreen(navController: NavController) {
         Column(
             modifier = Modifier
                 .padding(innerPadding)
-                .fillMaxSize()
-                .verticalScroll(scrollState),
-
+                .fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             if (isEditing) {
@@ -184,8 +180,6 @@ fun EditProfileContent(
     onMobileNumberError: (String) -> Unit,
     onEmailError: (String) -> Unit
 ) {
-    val scrollState = rememberScrollState()
-
     // Validation state for fields
     var confirmPasswordError by remember { mutableStateOf(false) }
     var confirmPassword by remember { mutableStateOf("") }
@@ -209,236 +203,262 @@ fun EditProfileContent(
     val mobileNumberPattern = "^\\d{8}$".toRegex() // Exactly 8 digits
     val emailPattern = "^[A-Za-z0-9+_.-]+@(.+)$".toRegex() // Basic email pattern
 
-    Column(
-        modifier = Modifier.fillMaxWidth().padding(16.dp)
-            .verticalScroll(scrollState),
+    LazyColumn(
+        modifier = Modifier.fillMaxWidth().padding(16.dp),
         verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // Avatar Selection
-        Text("Select Avatar", style = MaterialTheme.typography.titleMedium)
-        Row(
-            horizontalArrangement = Arrangement.SpaceEvenly,
-            modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)
-        ) {
-            AvatarOption(R.drawable.avatar_1, userProfile)
-            AvatarOption(R.drawable.avatar_2, userProfile)
-            AvatarOption(R.drawable.avatar_3, userProfile)
+        item {
+            // Avatar Selection
+            Text("Select Avatar", style = MaterialTheme.typography.titleMedium)
+            Row(
+                horizontalArrangement = Arrangement.SpaceEvenly,
+                modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)
+            ) {
+                AvatarOption(R.drawable.avatar_1, userProfile)
+                AvatarOption(R.drawable.avatar_2, userProfile)
+                AvatarOption(R.drawable.avatar_3, userProfile)
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
         }
 
-        Spacer(modifier = Modifier.height(8.dp))
-
-        OutlinedTextField(
-            value = userProfile.value.userName,
-            onValueChange = {
-                userProfile.value = userProfile.value.copy(userName = it)
-                userNameError = when {
-                    it.isEmpty() -> "Username is required"
-                    !it.matches(usernamePattern) -> "Username must be 3-12 characters, alphanumeric only"
-                    else -> ""
-                }
-                onUserNameError(userNameError)
-            },
-            label = { Text(buildAnnotatedString {
-                append("Username")
-                withStyle(style = SpanStyle(color = Color.Red)) {
-                    append(" *")
-                }
-            }) },
-            placeholder = { Text("Enter username") },
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 15.dp),
-            isError = userNameError.isNotEmpty()
-        )
-        if (userNameError.isNotEmpty()) {
-            Text(userNameError, color = MaterialTheme.colorScheme.error)
-        }
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        // Trigger confirm password validation if password is filled and confirm password is empty
-        if (initialPasswordState.value.isNotEmpty() && confirmPassword.isEmpty()) {
-            confirmPasswordErrorMessage = "Confirm password is required"
-            confirmPasswordError = true
-        }
-        // Trigger confirm password validation if password is filled and confirm password doesn't match
-        else if (initialPasswordState.value.isNotEmpty() && initialPasswordState.value != confirmPassword) {
-            confirmPasswordErrorMessage = "Passwords do not match"
-            confirmPasswordError = true
-        }
-        else {
-            confirmPasswordErrorMessage = ""
-            confirmPasswordError = false
-        }
-        confirmPasswordError = confirmPasswordErrorMessage.isNotEmpty()
-        onPasswordError(confirmPasswordError) // Trigger callback for password error state
-
-        // Update the password fields only when user decides to change the password
-        OutlinedTextField(
-            value = initialPasswordState.value, // Start with empty password
-            onValueChange = {
-                if (it.isNotEmpty()) {
-                    initialPasswordState.value = it // Update only if not empty
-                    userProfile.value = userProfile.value.copy(password = it) // Update the userProfile
-                    passwordErrorMessage = when {
-                        it.length < 8 -> "Password must be at least 8 characters long"
-                        !it.any { char -> char.isUpperCase() } -> "Password must contain at least 1 uppercase letter"
-                        !it.any { char -> char.isLowerCase() } -> "Password must contain at least 1 lowercase letter"
-                        !it.any { char -> char.isDigit() } -> "Password must contain at least 1 number"
-                        !it.any { char -> "!@#$%^&*()_+-=<>?/.,;:'\"".contains(char) } -> "Password must contain at least 1 special character"
+        item {
+            OutlinedTextField(
+                value = userProfile.value.userName,
+                onValueChange = {
+                    userProfile.value = userProfile.value.copy(userName = it)
+                    userNameError = when {
+                        it.isEmpty() -> "Username is required"
+                        !it.matches(usernamePattern) -> "Username must be 3-12 characters, alphanumeric only"
                         else -> ""
                     }
-                } else {
-                    // If password is left empty, reset it to the current password
-                    initialPasswordState.value = ""
-                    userProfile.value = userProfile.value.copy(password = currentPassword)
-                    passwordErrorMessage = ""
-                }
-                onPasswordError(passwordErrorMessage.isNotEmpty())
-
-                // Trigger confirm password validation on password change
-                if (confirmPassword.isEmpty() && it.isNotEmpty()) {
-                    confirmPasswordErrorMessage = "Confirm password is required"
-                    confirmPasswordError = true
-                }
-            },
-            label = { Text("Password") },
-            placeholder = { Text("Enter password") },
-            visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-            trailingIcon = {
-                val image = if (passwordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
-                IconButton(onClick = { passwordVisible = !passwordVisible }) {
-                    Icon(imageVector = image, contentDescription = null)
-                }
-            },
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 15.dp),
-            isError = passwordErrorMessage.isNotEmpty()
-        )
-
-        if (passwordErrorMessage.isNotEmpty()) {
-            Text(passwordErrorMessage, color = MaterialTheme.colorScheme.error)
-        }
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        OutlinedTextField(
-            value = confirmPassword,
-            onValueChange = {
-                confirmPassword = it
-                confirmPasswordErrorMessage = when {
-                    it != userProfile.value.password -> "Passwords do not match"
-                    else -> ""
-                }
-                confirmPasswordError = confirmPasswordErrorMessage.isNotEmpty()
-                onPasswordError(confirmPasswordError)
-                // Only validate confirm password if the main password is not empty
-                if (userProfile.value.password.isNotEmpty()) {
-                    confirmPasswordErrorMessage = if (it != userProfile.value.password) {
-                        "Passwords do not match"
-                    } else {
-                        ""
-                    }
-                } else {
-                    confirmPasswordErrorMessage = if (it.isEmpty()) "Confirm Password is required" else ""
-                }
-                confirmPasswordError = confirmPasswordErrorMessage.isNotEmpty()
-                onPasswordError(confirmPasswordError) // Trigger callback for password error state
-            },
-            label = { Text("Confirm Password") },
-            placeholder = { Text("Re-enter password") },
-            visualTransformation = if (confirmPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-            trailingIcon = {
-                val image = if (confirmPasswordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
-                IconButton(onClick = { confirmPasswordVisible = !confirmPasswordVisible }) {
-                    Icon(imageVector = image, contentDescription = null)
-                }
-            },
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 15.dp),
-            isError = confirmPasswordErrorMessage.isNotEmpty()
-        )
-        if (confirmPasswordErrorMessage.isNotEmpty()) {
-            Text(confirmPasswordErrorMessage, color = MaterialTheme.colorScheme.error)
-        }
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        // Year of birth using DropdownMenuField
-        DropdownMenuField(userProfile.value.yob) { selectedYear ->
-            userProfile.value = userProfile.value.copy(yob = selectedYear)
-            yearOfBirthError = if (selectedYear.isEmpty()) "Year of birth is required" else ""
-        }
-        if (yearOfBirthError.isNotEmpty()) {
-            Text(yearOfBirthError, color = MaterialTheme.colorScheme.error)
-        }
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        // Gender selection using GenderSelection
-        GenderSelection(userProfile.value.gender) { selectedGender ->
-            userProfile.value = userProfile.value.copy(gender = selectedGender)
-        }
-
-        OutlinedTextField(
-            value = userProfile.value.mobile,
-            onValueChange = {
-                userProfile.value = userProfile.value.copy(mobile = it)
-                mobileNumberError = when {
-                    it.isEmpty() -> "Mobile number is required"
-                    !it.matches(mobileNumberPattern) -> "Mobile number must be 8 digits"
-                    else -> ""
-                }
-                onMobileNumberError(mobileNumberError)
-            },
-            label = { Text(buildAnnotatedString {
-                append("Mobile Number")
-                withStyle(style = SpanStyle(color = Color.Red)) {
-                    append(" *")
-                }
-            }) },
-            placeholder = { Text("Enter mobile number") },
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 15.dp),
-            isError = mobileNumberError.isNotEmpty()
-        )
-        if (mobileNumberError.isNotEmpty()) {
-            Text(mobileNumberError, color = MaterialTheme.colorScheme.error)
-        }
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        OutlinedTextField(
-            value = userProfile.value.email,
-            onValueChange = {
-                userProfile.value = userProfile.value.copy(email = it)
-                emailError = when {
-                    it.isEmpty() -> "Email is required"
-                    !it.matches(emailPattern) -> "Invalid email format"
-                    else -> ""
-                }
-                onEmailError(emailError)
-            },
-            label = { Text(buildAnnotatedString {
-                append("Email")
-                withStyle(style = SpanStyle(color = Color.Red)) {
-                    append(" *")
-                }
-            }) },
-            placeholder = { Text("Enter email") },
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 15.dp),
-            isError = emailError.isNotEmpty()
-        )
-        if (emailError.isNotEmpty()) {
-            Text(emailError, color = MaterialTheme.colorScheme.error)
-        }
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        Row(
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Checkbox(
-                checked = userProfile.value.updates,
-                onCheckedChange = { userProfile.value = userProfile.value.copy(updates = it) }
+                    onUserNameError(userNameError)
+                },
+                label = {
+                    Text(buildAnnotatedString {
+                        append("Username")
+                        withStyle(style = SpanStyle(color = Color.Red)) {
+                            append(" *")
+                        }
+                    })
+                },
+                placeholder = { Text("Enter username") },
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 15.dp),
+                isError = userNameError.isNotEmpty()
             )
-            Text(text = "To receive updates")
+            if (userNameError.isNotEmpty()) {
+                Text(userNameError, color = MaterialTheme.colorScheme.error)
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+        }
+
+        item {
+            // Trigger confirm password validation if password is filled and confirm password is empty
+            if (initialPasswordState.value.isNotEmpty() && confirmPassword.isEmpty()) {
+                confirmPasswordErrorMessage = "Confirm password is required"
+                confirmPasswordError = true
+            }
+            // Trigger confirm password validation if password is filled and confirm password doesn't match
+            else if (initialPasswordState.value.isNotEmpty() && initialPasswordState.value != confirmPassword) {
+                confirmPasswordErrorMessage = "Passwords do not match"
+                confirmPasswordError = true
+            } else {
+                confirmPasswordErrorMessage = ""
+                confirmPasswordError = false
+            }
+            confirmPasswordError = confirmPasswordErrorMessage.isNotEmpty()
+            onPasswordError(confirmPasswordError) // Trigger callback for password error state
+
+            // Update the password fields only when user decides to change the password
+            OutlinedTextField(
+                value = initialPasswordState.value, // Start with empty password
+                onValueChange = {
+                    if (it.isNotEmpty()) {
+                        initialPasswordState.value = it // Update only if not empty
+                        userProfile.value =
+                            userProfile.value.copy(password = it) // Update the userProfile
+                        passwordErrorMessage = when {
+                            it.length < 8 -> "Password must be at least 8 characters long"
+                            !it.any { char -> char.isUpperCase() } -> "Password must contain at least 1 uppercase letter"
+                            !it.any { char -> char.isLowerCase() } -> "Password must contain at least 1 lowercase letter"
+                            !it.any { char -> char.isDigit() } -> "Password must contain at least 1 number"
+                            !it.any { char -> "!@#$%^&*()_+-=<>?/.,;:'\"".contains(char) } -> "Password must contain at least 1 special character"
+                            else -> ""
+                        }
+                    } else {
+                        // If password is left empty, reset it to the current password
+                        initialPasswordState.value = ""
+                        userProfile.value = userProfile.value.copy(password = currentPassword)
+                        passwordErrorMessage = ""
+                    }
+                    onPasswordError(passwordErrorMessage.isNotEmpty())
+
+                    // Trigger confirm password validation on password change
+                    if (confirmPassword.isEmpty() && it.isNotEmpty()) {
+                        confirmPasswordErrorMessage = "Confirm password is required"
+                        confirmPasswordError = true
+                    }
+                },
+                label = { Text("Password") },
+                placeholder = { Text("Enter password") },
+                visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                trailingIcon = {
+                    val image =
+                        if (passwordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
+                    IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                        Icon(imageVector = image, contentDescription = null)
+                    }
+                },
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 15.dp),
+                isError = passwordErrorMessage.isNotEmpty()
+            )
+            if (passwordErrorMessage.isNotEmpty()) {
+                Text(passwordErrorMessage, color = MaterialTheme.colorScheme.error)
+            }
+
+
+            Spacer(modifier = Modifier.height(8.dp))
+        }
+
+        item {
+            OutlinedTextField(
+                value = confirmPassword,
+                onValueChange = {
+                    confirmPassword = it
+                    confirmPasswordErrorMessage = when {
+                        it != userProfile.value.password -> "Passwords do not match"
+                        else -> ""
+                    }
+                    confirmPasswordError = confirmPasswordErrorMessage.isNotEmpty()
+                    onPasswordError(confirmPasswordError)
+                    // Only validate confirm password if the main password is not empty
+                    if (userProfile.value.password.isNotEmpty()) {
+                        confirmPasswordErrorMessage = if (it != userProfile.value.password) {
+                            "Passwords do not match"
+                        } else {
+                            ""
+                        }
+                    } else {
+                        confirmPasswordErrorMessage =
+                            if (it.isEmpty()) "Confirm Password is required" else ""
+                    }
+                    confirmPasswordError = confirmPasswordErrorMessage.isNotEmpty()
+                    onPasswordError(confirmPasswordError) // Trigger callback for password error state
+                },
+                label = { Text("Confirm Password") },
+                placeholder = { Text("Re-enter password") },
+                visualTransformation = if (confirmPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                trailingIcon = {
+                    val image =
+                        if (confirmPasswordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
+                    IconButton(onClick = { confirmPasswordVisible = !confirmPasswordVisible }) {
+                        Icon(imageVector = image, contentDescription = null)
+                    }
+                },
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 15.dp),
+                isError = confirmPasswordErrorMessage.isNotEmpty()
+            )
+            if (confirmPasswordErrorMessage.isNotEmpty()) {
+                Text(confirmPasswordErrorMessage, color = MaterialTheme.colorScheme.error)
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+        }
+
+        item {
+            // Year of birth using DropdownMenuField
+            DropdownMenuField(userProfile.value.yob) { selectedYear ->
+                userProfile.value = userProfile.value.copy(yob = selectedYear)
+                yearOfBirthError = if (selectedYear.isEmpty()) "Year of birth is required" else ""
+            }
+            if (yearOfBirthError.isNotEmpty()) {
+                Text(yearOfBirthError, color = MaterialTheme.colorScheme.error)
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+        }
+
+        item {
+            // Gender selection using GenderSelection
+            GenderSelection(userProfile.value.gender) { selectedGender ->
+                userProfile.value = userProfile.value.copy(gender = selectedGender)
+            }
+        }
+
+        item {
+            OutlinedTextField(
+                value = userProfile.value.mobile,
+                onValueChange = {
+                    userProfile.value = userProfile.value.copy(mobile = it)
+                    mobileNumberError = when {
+                        it.isEmpty() -> "Mobile number is required"
+                        !it.matches(mobileNumberPattern) -> "Mobile number must be 8 digits"
+                        else -> ""
+                    }
+                    onMobileNumberError(mobileNumberError)
+                },
+                label = {
+                    Text(buildAnnotatedString {
+                        append("Mobile Number")
+                        withStyle(style = SpanStyle(color = Color.Red)) {
+                            append(" *")
+                        }
+                    })
+                },
+                placeholder = { Text("Enter mobile number") },
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 15.dp),
+                isError = mobileNumberError.isNotEmpty()
+            )
+            if (mobileNumberError.isNotEmpty()) {
+                Text(mobileNumberError, color = MaterialTheme.colorScheme.error)
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+        }
+
+        item {
+            OutlinedTextField(
+                value = userProfile.value.email,
+                onValueChange = {
+                    userProfile.value = userProfile.value.copy(email = it)
+                    emailError = when {
+                        it.isEmpty() -> "Email is required"
+                        !it.matches(emailPattern) -> "Invalid email format"
+                        else -> ""
+                    }
+                    onEmailError(emailError)
+                },
+                label = {
+                    Text(buildAnnotatedString {
+                        append("Email")
+                        withStyle(style = SpanStyle(color = Color.Red)) {
+                            append(" *")
+                        }
+                    })
+                },
+                placeholder = { Text("Enter email") },
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 15.dp),
+                isError = emailError.isNotEmpty()
+            )
+            if (emailError.isNotEmpty()) {
+                Text(emailError, color = MaterialTheme.colorScheme.error)
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+        }
+
+        item {
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Checkbox(
+                    checked = userProfile.value.updates,
+                    onCheckedChange = { userProfile.value = userProfile.value.copy(updates = it) }
+                )
+                Text(text = "To receive updates")
+            }
         }
     }
 }

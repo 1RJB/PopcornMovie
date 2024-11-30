@@ -2,6 +2,7 @@ package com.it2161.dit99999x.assignment1.ui.components
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -66,32 +67,39 @@ fun MovieDetailScreen(navController: NavController, movie: MovieItem) {
             )
         }
     ) { innerPadding ->
-        Column(
+        LazyColumn(
             modifier = Modifier
                 .padding(innerPadding)
                 .fillMaxSize()
                 .verticalScroll(scrollState),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Image(
-                bitmap = MovieRaterApplication.instance.getImgVector(movie.image).asImageBitmap(),
-                contentDescription = movie.title,
-                modifier = Modifier
-                    .aspectRatio(0.95f) // Make it square
-                    .height(140.dp) // Maintain desired height
-                    .padding(16.dp),
-                contentScale = ContentScale.Crop
-            )
+            item {
+                Image(
+                    bitmap = MovieRaterApplication.instance.getImgVector(movie.image)
+                        .asImageBitmap(),
+                    contentDescription = movie.title,
+                    modifier = Modifier
+                        .aspectRatio(0.95f) // Make it square
+                        .height(140.dp) // Maintain desired height
+                        .padding(16.dp),
+                    contentScale = ContentScale.Crop
+                )
 
-            Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(16.dp))
+            }
 
-            // Display movie details from JSON
-            MovieDetails(currentMovie.value)
+            item {
+                // Display movie details from JSON
+                MovieDetails(currentMovie.value)
 
-            Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(16.dp))
+            }
 
-            // Display comments without LazyColumn
-            CommentsSection(currentMovie.value.comment, movie, navController)
+            item {
+                // Display comments without LazyColumn
+                CommentsSection(currentMovie.value.comment, movie, navController)
+            }
         }
     }
 }
@@ -112,9 +120,11 @@ fun MovieDetails(movie: MovieItem) {
 @Composable
 fun CommentsSection(comments: List<Comments>, movie: MovieItem, navController: NavController) {
     Text("Comments", style = MaterialTheme.typography.titleLarge, textAlign = TextAlign.Center, fontSize = 20.sp, modifier = Modifier.padding(top=16.dp))
-    Column(modifier = Modifier.padding(16.dp)) {
-        for (comment in comments.sortedByDescending { it.date + " " + it.time }) {
-            CommentItem(comment, movie, navController)
+    LazyColumn(modifier = Modifier.padding(16.dp)) {
+        item {
+            for (comment in comments.sortedByDescending { it.date + " " + it.time }) {
+                CommentItem(comment, movie, navController)
+            }
         }
     }
 }

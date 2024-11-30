@@ -17,6 +17,7 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.google.gson.Gson
 import com.it2161.dit99999x.assignment1.MovieRaterApplication
@@ -98,18 +99,19 @@ fun MovieDetailScreen(navController: NavController, movie: MovieItem) {
 @Composable
 fun MovieDetails(movie: MovieItem) {
     Column(modifier = Modifier.padding(16.dp)) {
-        Text("Release Date: ${movie.releaseDate}", style = MaterialTheme.typography.bodyMedium)
-        Text("Synopsis: ${movie.synopsis}", style = MaterialTheme.typography.bodyMedium)
-        Text("Cast: ${movie.actors.joinToString()}", style = MaterialTheme.typography.bodyMedium)
         Text("Director: ${movie.director}", style = MaterialTheme.typography.bodyMedium)
+        Text("Release Date: ${movie.releaseDate}", style = MaterialTheme.typography.bodyMedium)
+        Text("Rating: ${movie.ratings_score} / 10", style = MaterialTheme.typography.bodyMedium)
+        Text("Actors: ${movie.actors.joinToString()}", style = MaterialTheme.typography.bodyMedium)
         Text("Genre: ${movie.genre}", style = MaterialTheme.typography.bodyMedium)
         Text("Length: ${movie.length} minutes", style = MaterialTheme.typography.bodyMedium)
+        Text("Synopsis: ${movie.synopsis}", style = MaterialTheme.typography.bodyMedium)
     }
 }
 
 @Composable
 fun CommentsSection(comments: List<Comments>, movie: MovieItem, navController: NavController) {
-    Text("Comments", style = MaterialTheme.typography.titleMedium, textAlign = TextAlign.Center, modifier = Modifier.padding(16.dp))
+    Text("Comments", style = MaterialTheme.typography.titleLarge, textAlign = TextAlign.Center, fontSize = 20.sp, modifier = Modifier.padding(top=16.dp))
     Column(modifier = Modifier.padding(16.dp)) {
         for (comment in comments.sortedByDescending { it.date + " " + it.time }) {
             CommentItem(comment, movie, navController)

@@ -1,5 +1,5 @@
-package com.it2161.dit99999x.assignment1.data
-import com.it2161.dit99999x.assignment1.R
+package com.it2161.dit233774U.assignment1.data
+import com.it2161.dit233774U.assignment1.R
 
 data class UserProfile(
     val userName: String = "",

@@ -1,4 +1,4 @@
-package com.it2161.dit99999x.assignment1.ui.theme
+package com.it2161.dit233774U.assignment1.ui.theme
 
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme

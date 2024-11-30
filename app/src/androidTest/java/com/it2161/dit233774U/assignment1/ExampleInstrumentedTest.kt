@@ -1,4 +1,4 @@
-package com.it2161.dit99999x.assignment1
+package com.it2161.dit233774U.assignment1
 
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.ext.junit.runners.AndroidJUnit4

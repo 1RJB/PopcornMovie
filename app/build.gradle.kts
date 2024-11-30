@@ -4,11 +4,11 @@ plugins {
 }
 
 android {
-    namespace = "com.it2161.dit99999x.assignment1"
+    namespace = "com.it2161.dit233774U.assignment1"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.it2161.dit99999x.assignment1"
+        applicationId = "com.it2161.dit233774U.assignment1"
         minSdk = 34
         targetSdk = 34
         versionCode = 1

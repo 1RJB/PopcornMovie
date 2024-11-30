@@ -1,4 +1,4 @@
-package com.it2161.dit99999x.assignment1.ui.components
+package com.it2161.dit233774U.assignment1.ui.components
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -21,9 +21,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.google.gson.Gson
-import com.it2161.dit99999x.assignment1.MovieRaterApplication
-import com.it2161.dit99999x.assignment1.data.Comments
-import com.it2161.dit99999x.assignment1.data.MovieItem
+import com.it2161.dit233774U.assignment1.MovieRaterApplication
+import com.it2161.dit233774U.assignment1.data.Comments
+import com.it2161.dit233774U.assignment1.data.MovieItem
 import java.text.SimpleDateFormat
 import java.time.LocalDateTime
 import java.time.ZoneId

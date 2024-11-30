@@ -1,4 +1,4 @@
-package com.it2161.dit99999x.assignment1.ui.components
+package com.it2161.dit233774U.assignment1.ui.components
 
 import android.widget.Toast
 import androidx.compose.foundation.Image
@@ -15,7 +15,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.it2161.dit99999x.assignment1.R
+import com.it2161.dit233774U.assignment1.R
 import androidx.navigation.NavController
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Visibility
@@ -23,7 +23,7 @@ import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.navigation.compose.rememberNavController
-import com.it2161.dit99999x.assignment1.MovieRaterApplication
+import com.it2161.dit233774U.assignment1.MovieRaterApplication
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

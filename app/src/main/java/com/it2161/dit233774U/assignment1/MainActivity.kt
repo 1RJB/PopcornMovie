@@ -1,4 +1,4 @@
-package com.it2161.dit99999x.assignment1
+package com.it2161.dit233774U.assignment1
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -9,19 +9,19 @@ import androidx.compose.material3.Surface
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.it2161.dit99999x.assignment1.ui.components.LoginScreen
-import com.it2161.dit99999x.assignment1.ui.components.LandingScreen
-import com.it2161.dit99999x.assignment1.ui.components.RegisterUserScreen
-import com.it2161.dit99999x.assignment1.ui.components.MovieDetailScreen
-import com.it2161.dit99999x.assignment1.ui.components.CommentMovieScreen
-import com.it2161.dit99999x.assignment1.ui.components.ProfileScreen
-import com.it2161.dit99999x.assignment1.ui.theme.Assignment1Theme
+import com.it2161.dit233774U.assignment1.ui.components.LoginScreen
+import com.it2161.dit233774U.assignment1.ui.components.LandingScreen
+import com.it2161.dit233774U.assignment1.ui.components.RegisterUserScreen
+import com.it2161.dit233774U.assignment1.ui.components.MovieDetailScreen
+import com.it2161.dit233774U.assignment1.ui.components.CommentMovieScreen
+import com.it2161.dit233774U.assignment1.ui.components.ProfileScreen
+import com.it2161.dit233774U.assignment1.ui.theme.Assignment1Theme
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
 import com.google.gson.Gson
-import com.it2161.dit99999x.assignment1.data.Comments
-import com.it2161.dit99999x.assignment1.data.MovieItem
-import com.it2161.dit99999x.assignment1.ui.components.ViewCommentScreen
+import com.it2161.dit233774U.assignment1.data.Comments
+import com.it2161.dit233774U.assignment1.data.MovieItem
+import com.it2161.dit233774U.assignment1.ui.components.ViewCommentScreen
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

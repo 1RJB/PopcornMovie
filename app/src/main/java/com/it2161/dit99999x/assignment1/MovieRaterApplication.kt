@@ -64,12 +64,7 @@ class MovieRaterApplication : Application() {
                 val title = jsonObject.getString("title")
                 val director = jsonObject.getString("director")
                 val releaseDate = jsonObject.getString("release_date")
-                var rating = jsonObject.getString("rating")
-                val parts = rating.split("/")
-                if (parts.size > 2)
-                    rating = parts[0]
-                else
-                    rating = "0"
+                val rating = jsonObject.optString("rating", "0").split("/").firstOrNull()?.toFloatOrNull() ?: 0f
                 val poster = jsonObject.getString("image")
                 val actors = jsonObject.getJSONArray("actors")
                 val genre = jsonObject.getString("genre")

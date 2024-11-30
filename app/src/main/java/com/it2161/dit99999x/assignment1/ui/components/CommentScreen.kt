@@ -176,11 +176,13 @@ fun ViewCommentScreen(navController: NavController, movieTitle: String, comment:
     Scaffold(
         topBar = { MovieRaterTopAppBar(movieTitle, navController) } // Set movieTitle as the top bar title
     ) { innerPadding ->
+        val scrollState = rememberScrollState()
         Column(
             modifier = Modifier
                 .padding(innerPadding)
                 .padding(16.dp)
                 .fillMaxWidth()
+                .verticalScroll(scrollState),
         ) {
             Column(
                 modifier = Modifier.padding(16.dp)

@@ -4,6 +4,8 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.MoreVert
@@ -42,6 +44,7 @@ fun ProfileScreen(navController: NavController) {
     val configuration = LocalConfiguration.current
     val screenHeight = configuration.screenHeightDp.dp
     val imageHeight = screenHeight / 3
+    val scrollState = rememberScrollState()
 
     var showMenu by remember { mutableStateOf(false) }
     var passwordError by remember { mutableStateOf(false) }
@@ -119,7 +122,9 @@ fun ProfileScreen(navController: NavController) {
         Column(
             modifier = Modifier
                 .padding(innerPadding)
-                .fillMaxSize(),
+                .fillMaxSize()
+                .verticalScroll(scrollState),
+
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             if (isEditing) {

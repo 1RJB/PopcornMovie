@@ -2,7 +2,9 @@ package com.it2161.dit99999x.assignment1.ui.components
 
 import android.widget.Toast
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Visibility
@@ -33,6 +35,7 @@ import java.util.*
 @Composable
 fun RegisterUserScreen(navController: NavController) {
     val context = LocalContext.current
+    val scrollState = rememberScrollState()
     var userName by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
@@ -114,9 +117,11 @@ fun RegisterUserScreen(navController: NavController) {
     }
 
     Column(
-        modifier = Modifier.fillMaxSize().padding(16.dp),
+        modifier = Modifier.fillMaxSize().padding(16.dp)
+        .verticalScroll(scrollState),
         verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.CenterHorizontally
+
     ) {
         Text(text = "Register", style = MaterialTheme.typography.headlineMedium, modifier = Modifier
             .padding(top = 80.dp))

@@ -166,7 +166,6 @@ fun EditProfileContent(userProfile: MutableState<UserProfile>, onPasswordError: 
     var mobileNumberError by remember { mutableStateOf("") }
     var emailError by remember { mutableStateOf("") }
     var yearOfBirthError by remember { mutableStateOf("") }
-    var genderError by remember { mutableStateOf("") }
 
     // Validation patterns for each rule
     val usernamePattern = "^[a-zA-Z0-9]{3,12}$".toRegex() // Alphanumeric, 3-12 characters
@@ -175,6 +174,7 @@ fun EditProfileContent(userProfile: MutableState<UserProfile>, onPasswordError: 
 
     Column(
         modifier = Modifier.fillMaxWidth().padding(16.dp),
+        verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         // Avatar Selection
@@ -188,6 +188,8 @@ fun EditProfileContent(userProfile: MutableState<UserProfile>, onPasswordError: 
             AvatarOption(R.drawable.avatar_3, userProfile)
         }
 
+        Spacer(modifier = Modifier.height(8.dp))
+
         OutlinedTextField(
             value = userProfile.value.userName,
             onValueChange = {
@@ -199,17 +201,20 @@ fun EditProfileContent(userProfile: MutableState<UserProfile>, onPasswordError: 
                 }
             },
             label = { Text(buildAnnotatedString {
-                append("Name")
+                append("Username")
                 withStyle(style = SpanStyle(color = Color.Red)) {
                     append(" *")
                 }
             }) },
-            modifier = Modifier.fillMaxWidth(),
+            placeholder = { Text("Enter username") },
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 15.dp),
             isError = userNameError.isNotEmpty()
         )
         if (userNameError.isNotEmpty()) {
             Text(userNameError, color = MaterialTheme.colorScheme.error)
         }
+
+        Spacer(modifier = Modifier.height(8.dp))
 
         // Update the password fields only when user decides to change the password
         OutlinedTextField(
@@ -225,6 +230,7 @@ fun EditProfileContent(userProfile: MutableState<UserProfile>, onPasswordError: 
                     append(" *")
                 }
             }) },
+            placeholder = { Text("Enter password") },
             visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
             trailingIcon = {
                 val image = if (passwordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
@@ -232,9 +238,11 @@ fun EditProfileContent(userProfile: MutableState<UserProfile>, onPasswordError: 
                     Icon(imageVector = image, contentDescription = null)
                 }
             },
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 15.dp),
             isError = passwordError // Display error state if passwords don't match
         )
+
+        Spacer(modifier = Modifier.height(8.dp))
 
         OutlinedTextField(
             value = confirmPassword,
@@ -249,6 +257,7 @@ fun EditProfileContent(userProfile: MutableState<UserProfile>, onPasswordError: 
                     append(" *")
                 }
             }) },
+            placeholder = { Text("Enter password") },
             visualTransformation = if (confirmPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
             trailingIcon = {
                 val image = if (confirmPasswordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
@@ -256,46 +265,26 @@ fun EditProfileContent(userProfile: MutableState<UserProfile>, onPasswordError: 
                     Icon(imageVector = image, contentDescription = null)
                 }
             },
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 15.dp),
             isError = passwordError // Display error state if passwords don't match
         )
 
-        OutlinedTextField(
-            value = userProfile.value.yob,
-            onValueChange = {
-                userProfile.value = userProfile.value.copy(yob = it)
-                yearOfBirthError = if (it.isEmpty()) "Year of birth is required" else ""
-            },
-            label = { Text(buildAnnotatedString {
-                append("Year of Birth")
-                withStyle(style = SpanStyle(color = Color.Red)) {
-                    append(" *")
-                }
-            }) },
-            modifier = Modifier.fillMaxWidth(),
-            isError = yearOfBirthError.isNotEmpty()
-        )
+        Spacer(modifier = Modifier.height(8.dp))
+
+        // Year of birth using DropdownMenuField
+        DropdownMenuField(userProfile.value.yob) { selectedYear ->
+            userProfile.value = userProfile.value.copy(yob = selectedYear)
+            yearOfBirthError = if (selectedYear.isEmpty()) "Year of birth is required" else ""
+        }
         if (yearOfBirthError.isNotEmpty()) {
             Text(yearOfBirthError, color = MaterialTheme.colorScheme.error)
         }
 
-        OutlinedTextField(
-            value = userProfile.value.gender,
-            onValueChange = {
-                userProfile.value = userProfile.value.copy(gender = it)
-                genderError = if (it.isEmpty()) "Gender is required" else ""
-            },
-            label = { Text(buildAnnotatedString {
-                append("Gender")
-                withStyle(style = SpanStyle(color = Color.Red)) {
-                    append(" *")
-                }
-            })},
-            modifier = Modifier.fillMaxWidth(),
-            isError = genderError.isNotEmpty()
-        )
-        if (genderError.isNotEmpty()) {
-            Text(genderError, color = MaterialTheme.colorScheme.error)
+        Spacer(modifier = Modifier.height(8.dp))
+
+        // Gender selection using GenderSelection
+        GenderSelection(userProfile.value.gender) { selectedGender ->
+            userProfile.value = userProfile.value.copy(gender = selectedGender)
         }
 
         OutlinedTextField(
@@ -314,12 +303,15 @@ fun EditProfileContent(userProfile: MutableState<UserProfile>, onPasswordError: 
                     append(" *")
                 }
             }) },
-            modifier = Modifier.fillMaxWidth(),
+            placeholder = { Text("Enter mobile number") },
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 15.dp),
             isError = mobileNumberError.isNotEmpty()
         )
         if (mobileNumberError.isNotEmpty()) {
             Text(mobileNumberError, color = MaterialTheme.colorScheme.error)
         }
+
+        Spacer(modifier = Modifier.height(8.dp))
 
         OutlinedTextField(
             value = userProfile.value.email,
@@ -337,12 +329,15 @@ fun EditProfileContent(userProfile: MutableState<UserProfile>, onPasswordError: 
                     append(" *")
                 }
             }) },
-            modifier = Modifier.fillMaxWidth(),
+            placeholder = { Text("Enter email") },
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 15.dp),
             isError = emailError.isNotEmpty()
         )
         if (emailError.isNotEmpty()) {
             Text(emailError, color = MaterialTheme.colorScheme.error)
         }
+
+        Spacer(modifier = Modifier.height(8.dp))
 
         Row(
             verticalAlignment = Alignment.CenterVertically
@@ -351,7 +346,7 @@ fun EditProfileContent(userProfile: MutableState<UserProfile>, onPasswordError: 
                 checked = userProfile.value.updates,
                 onCheckedChange = { userProfile.value = userProfile.value.copy(updates = it) }
             )
-            Text(text = "Receive updates via email")
+            Text(text = "To receive updates")
         }
     }
 }

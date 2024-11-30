@@ -200,7 +200,7 @@ fun RegisterUserScreen(navController: NavController) {
                     append(" *")
                 }
             }) },
-            placeholder = { Text("Re-enter password") },
+            placeholder = { Text("Enter password") },
             visualTransformation = if (confirmPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
             trailingIcon = {
                 val image = if (confirmPasswordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff

@@ -66,7 +66,7 @@ fun LandingScreen(navController: NavController) {
             val genre = jsonObject.getString("genre")
             val length = jsonObject.getInt("length")
             val synopsis = jsonObject.getString("synopsis")
-            val comments = gson.fromJson(jsonObject.getJSONArray("comments").toString(), Array<Comments>::class.java).toList()
+            val comments = gson.fromJson(jsonObject.getJSONArray("comments").toString(), Array<Comments>::class. java).toList()
 
             val movieItem = MovieItem(title, director, releaseDate, rating, actors, image, genre, length, synopsis, comments)
             movies.add(movieItem)

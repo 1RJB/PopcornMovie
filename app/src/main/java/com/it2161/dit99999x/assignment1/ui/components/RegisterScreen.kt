@@ -9,6 +9,8 @@ import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
@@ -38,6 +40,75 @@ fun RegisterUserScreen(navController: NavController) {
     var passwordVisible by remember { mutableStateOf(false) }
     var confirmPasswordVisible by remember { mutableStateOf(false) }
 
+    // Validation states for password fields
+    var passwordError by remember { mutableStateOf("") }
+    var confirmPasswordError by remember { mutableStateOf("") }
+
+    // Validation states for other fields
+    var userNameError by remember { mutableStateOf("") }
+    var mobileNumberError by remember { mutableStateOf("") }
+    var emailError by remember { mutableStateOf("") }
+    var yearOfBirthError by remember { mutableStateOf("") }
+    var genderError by remember { mutableStateOf("") }
+
+    // Validation patterns for each rule
+    val usernamePattern = "^[a-zA-Z0-9]{3,12}$".toRegex() // Alphanumeric, 3-12 characters
+    val mobileNumberPattern = "^\\d{8}$".toRegex() // Exactly 8 digits
+    val emailPattern = "^[A-Za-z0-9+_.-]+@(.+)$".toRegex() // Basic email pattern
+
+    // Validation function for required fields
+    fun validateFields(): Boolean {
+        var isValid = true
+
+        // Username validation
+        userNameError = when {
+            userName.isEmpty() -> "Username is required"
+            !userName.matches(usernamePattern) -> "Username must be 3-12 characters, alphanumeric only"
+            else -> ""
+        }
+        if (userNameError.isNotEmpty()) isValid = false
+
+        // Mobile number validation
+        mobileNumberError = when {
+            mobileNumber.isEmpty() -> "Mobile number is required"
+            !mobileNumber.matches(mobileNumberPattern) -> "Mobile number must be 8 digits"
+            else -> ""
+        }
+        if (mobileNumberError.isNotEmpty()) isValid = false
+
+        // Email validation
+        emailError = when {
+            email.isEmpty() -> "Email is required"
+            !email.matches(emailPattern) -> "Invalid email format"
+            else -> ""
+        }
+        if (emailError.isNotEmpty()) isValid = false
+
+        // Year of birth validation
+        yearOfBirthError = if (yearOfBirth.isEmpty()) "Year of birth is required" else ""
+        if (yearOfBirthError.isNotEmpty()) isValid = false
+
+        // Gender validation
+        genderError = if (gender.isEmpty()) "Gender is required" else ""
+        if (genderError.isNotEmpty()) isValid = false
+
+        // Password validation
+        passwordError = when {
+            password.length < 8 -> "Password must be at least 8 characters long"
+            !password.any { it.isUpperCase() } -> "Password must contain at least 1 uppercase letter"
+            !password.any { it.isLowerCase() } -> "Password must contain at least 1 lowercase letter"
+            !password.any { it.isDigit() } -> "Password must contain at least 1 number"
+            !password.any { "!@#$%^&*()_+-=<>?/.,;:'\"".contains(it) } -> "Password must contain at least 1 special character"
+            else -> ""
+        }
+        if (passwordError.isNotEmpty()) isValid = false
+
+        // Confirm password validation
+        confirmPasswordError = if (confirmPassword != password) "Passwords do not match" else ""
+        if (confirmPasswordError.isNotEmpty()) isValid = false // Prevent registration if passwords don't match
+        return isValid
+    }
+
     Column(
         modifier = Modifier.fillMaxSize().padding(16.dp),
         verticalArrangement = Arrangement.Top,
@@ -48,19 +119,42 @@ fun RegisterUserScreen(navController: NavController) {
 
         Spacer(modifier = Modifier.height(16.dp))
 
+        // Username input with validation
         OutlinedTextField(
             value = userName,
-            onValueChange = { userName = it },
+            onValueChange = {
+                userName = it
+                userNameError = when {
+                    it.isEmpty() -> "Username is required"
+                    !it.matches(usernamePattern) -> "Username must be 3-12 characters, alphanumeric only"
+                    else -> ""
+                }
+            },
             label = { Text("Username") },
             placeholder = { Text("Enter username") },
+            isError = userNameError.isNotEmpty(),
             modifier = Modifier.fillMaxWidth().padding(horizontal = 15.dp)
         )
+        if (userNameError.isNotEmpty()) {
+            Text(userNameError, color = MaterialTheme.colorScheme.error)
+        }
 
         Spacer(modifier = Modifier.height(8.dp))
 
+        // Password input with validation
         OutlinedTextField(
             value = password,
-            onValueChange = { password = it },
+            onValueChange = {
+                password = it
+                passwordError = when {
+                    it.length < 8 -> "Password must be at least 8 characters long"
+                    !it.any { char -> char.isUpperCase() } -> "Password must contain at least 1 uppercase letter"
+                    !it.any { char -> char.isLowerCase() } -> "Password must contain at least 1 lowercase letter"
+                    !it.any { char -> char.isDigit() } -> "Password must contain at least 1 number"
+                    !it.any { char -> "!@#$%^&*()_+-=<>?/.,;:'\"".contains(char) } -> "Password must contain at least 1 special character"
+                    else -> ""
+                }
+            },
             label = { Text("Password") },
             placeholder = { Text("Enter password") },
             visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
@@ -70,16 +164,24 @@ fun RegisterUserScreen(navController: NavController) {
                     Icon(imageVector = image, contentDescription = if (passwordVisible) "Hide password" else "Show password")
                 }
             },
+            isError = passwordError.isNotEmpty(),
             modifier = Modifier.fillMaxWidth().padding(horizontal = 15.dp)
         )
+        if (passwordError.isNotEmpty()) {
+            Text(passwordError, color = MaterialTheme.colorScheme.error)
+        }
 
         Spacer(modifier = Modifier.height(8.dp))
 
+        // Confirm Password input with validation
         OutlinedTextField(
             value = confirmPassword,
-            onValueChange = { confirmPassword = it },
+            onValueChange = {
+                confirmPassword = it
+                confirmPasswordError = if (confirmPassword != password) "Passwords do not match" else ""
+            },
             label = { Text("Confirm Password") },
-            placeholder = { Text("Enter password") },
+            placeholder = { Text("Re-enter password") },
             visualTransformation = if (confirmPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
             trailingIcon = {
                 val image = if (confirmPasswordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
@@ -87,39 +189,71 @@ fun RegisterUserScreen(navController: NavController) {
                     Icon(imageVector = image, contentDescription = if (confirmPasswordVisible) "Hide password" else "Show password")
                 }
             },
+            isError = confirmPasswordError.isNotEmpty(),
             modifier = Modifier.fillMaxWidth().padding(horizontal = 15.dp)
         )
+        if (confirmPasswordError.isNotEmpty()) {
+            Text(confirmPasswordError, color = MaterialTheme.colorScheme.error)
+        }
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        DropdownMenuField(yearOfBirth) { selectedYear -> yearOfBirth = selectedYear }
+        // Year of birth input with validation
+        DropdownMenuField(yearOfBirth) { selectedYear ->
+            yearOfBirth = selectedYear
+            yearOfBirthError = if (selectedYear.isEmpty()) "Year of birth is required" else ""
+        }
+        if (yearOfBirthError.isNotEmpty()) {
+            Text(yearOfBirthError, color = MaterialTheme.colorScheme.error)
+        }
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        GenderSelection(gender) { selectedGender -> gender = selectedGender }
+        // Gender selection with validation
+        GenderSelection(gender) { selectedGender ->
+            gender = selectedGender
+            genderError = if (selectedGender.isEmpty()) "Gender is required" else ""
+        }
+        if (genderError.isNotEmpty()) {
+            Text(genderError, color = MaterialTheme.colorScheme.error)
+        }
 
         Spacer(modifier = Modifier.height(8.dp))
 
+        // Mobile number input with validation
         OutlinedTextField(
             value = mobileNumber,
-            onValueChange = { newValue ->
-                mobileNumber = newValue.filter { it.isDigit() }
+            onValueChange = {
+                mobileNumber = it
+                mobileNumberError = if (it.length != 8) "Mobile number must be 8 digits" else ""
             },
             label = { Text("Mobile Number") },
             placeholder = { Text("Enter mobile number") },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+            isError = mobileNumberError.isNotEmpty(),
             modifier = Modifier.fillMaxWidth().padding(horizontal = 15.dp)
         )
+        if (mobileNumberError.isNotEmpty()) {
+            Text(mobileNumberError, color = MaterialTheme.colorScheme.error)
+        }
 
         Spacer(modifier = Modifier.height(8.dp))
 
+        // Email input with validation
         OutlinedTextField(
             value = email,
-            onValueChange = { email = it },
+            onValueChange = {
+                email = it
+                emailError = if (!it.matches(emailPattern)) "Invalid email format" else ""
+            },
             label = { Text("Email") },
             placeholder = { Text("Enter email") },
+            isError = emailError.isNotEmpty(),
             modifier = Modifier.fillMaxWidth().padding(horizontal = 15.dp)
         )
+        if (emailError.isNotEmpty()) {
+            Text(emailError, color = MaterialTheme.colorScheme.error)
+        }
 
         Spacer(modifier = Modifier.height(8.dp))
 
@@ -130,30 +264,21 @@ fun RegisterUserScreen(navController: NavController) {
                 checked = receiveUpdates,
                 onCheckedChange = { receiveUpdates = it }
             )
-            Text(text = "Receive updates via email")
+            Text(text = "To receive updates")
         }
 
         Spacer(modifier = Modifier.height(16.dp))
 
+        // Register button with validation
         Button(
             onClick = {
-                if (validateFields(userName, password, confirmPassword, email, gender, mobileNumber, yearOfBirth)) {
-                    // Clear existing profile
-                    MovieRaterApplication.instance.userProfile = null
-
-                    // Create new profile
-                    val newProfile = UserProfile(userName, password, email, gender, mobileNumber, receiveUpdates, yearOfBirth)
-                    MovieRaterApplication.instance.userProfile = newProfile
-
+                if (validateFields()) {
+                    // Handle registration logic (successful)
+                    Toast.makeText(context, "Registration Successful!", Toast.LENGTH_SHORT).show()
+                    MovieRaterApplication.instance.userProfile = UserProfile(userName, password, email, gender, mobileNumber, receiveUpdates, yearOfBirth)
                     navController.navigate("landing")
                 } else {
-                    // Display error message using Toast
-                    if (password != confirmPassword) {
-                        Toast.makeText(context, "Passwords do not match", Toast.LENGTH_SHORT).show()
-                        return@Button
-                    }
-                    Toast.makeText(context, "Please fill in all fields", Toast.LENGTH_SHORT).show()
-
+                    Toast.makeText(context, "Please fix the errors before proceeding.", Toast.LENGTH_SHORT).show()
                 }
             },
             modifier = Modifier.fillMaxWidth().padding(horizontal = 15.dp)
@@ -163,9 +288,10 @@ fun RegisterUserScreen(navController: NavController) {
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        TextButton(
+        // Cancel and navigate back to Login screen
+        Button(
             onClick = { navController.navigate("login") },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 15.dp)
         ) {
             Text("Cancel")
         }
@@ -248,18 +374,6 @@ fun DropdownMenuField(selectedYear: String, onYearSelected: (String) -> Unit) {
             }
         }
     }
-}
-
-fun validateFields(
-    userName: String,
-    password: String,
-    confirmPassword: String,
-    email: String,
-    gender: String,
-    mobileNumber: String,
-    yearOfBirth: String
-): Boolean {
-    return userName.isNotEmpty() && password == confirmPassword && email.isNotEmpty() && gender.isNotEmpty() && mobileNumber.isNotEmpty() && yearOfBirth.isNotEmpty()
 }
 
 @Preview

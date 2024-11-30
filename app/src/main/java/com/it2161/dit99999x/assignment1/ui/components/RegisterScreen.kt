@@ -14,10 +14,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -130,7 +134,12 @@ fun RegisterUserScreen(navController: NavController) {
                     else -> ""
                 }
             },
-            label = { Text("Username") },
+            label = { Text(buildAnnotatedString {
+                append("Username")
+                withStyle(style = SpanStyle(color = Color.Red)) {
+                    append(" *")
+                }
+            }) },
             placeholder = { Text("Enter username") },
             isError = userNameError.isNotEmpty(),
             modifier = Modifier.fillMaxWidth().padding(horizontal = 15.dp)
@@ -155,7 +164,12 @@ fun RegisterUserScreen(navController: NavController) {
                     else -> ""
                 }
             },
-            label = { Text("Password") },
+            label = { Text(buildAnnotatedString {
+                append("Password")
+                withStyle(style = SpanStyle(color = Color.Red)) {
+                    append(" *")
+                }
+            }) },
             placeholder = { Text("Enter password") },
             visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
             trailingIcon = {
@@ -180,7 +194,12 @@ fun RegisterUserScreen(navController: NavController) {
                 confirmPassword = it
                 confirmPasswordError = if (confirmPassword != password) "Passwords do not match" else ""
             },
-            label = { Text("Confirm Password") },
+            label = { Text(buildAnnotatedString {
+                append("Confirm Password")
+                withStyle(style = SpanStyle(color = Color.Red)) {
+                    append(" *")
+                }
+            }) },
             placeholder = { Text("Re-enter password") },
             visualTransformation = if (confirmPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
             trailingIcon = {
@@ -227,7 +246,12 @@ fun RegisterUserScreen(navController: NavController) {
                 mobileNumber = it
                 mobileNumberError = if (it.length != 8) "Mobile number must be 8 digits" else ""
             },
-            label = { Text("Mobile Number") },
+            label = { Text(buildAnnotatedString {
+                append("Mobile Number")
+                withStyle(style = SpanStyle(color = Color.Red)) {
+                    append(" *")
+                }
+            }) },
             placeholder = { Text("Enter mobile number") },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
             isError = mobileNumberError.isNotEmpty(),
@@ -246,7 +270,12 @@ fun RegisterUserScreen(navController: NavController) {
                 email = it
                 emailError = if (!it.matches(emailPattern)) "Invalid email format" else ""
             },
-            label = { Text("Email") },
+            label = { Text(buildAnnotatedString {
+                append("Email")
+                withStyle(style = SpanStyle(color = Color.Red)) {
+                    append(" *")
+                }
+            }) },
             placeholder = { Text("Enter email") },
             isError = emailError.isNotEmpty(),
             modifier = Modifier.fillMaxWidth().padding(horizontal = 15.dp)
@@ -286,7 +315,7 @@ fun RegisterUserScreen(navController: NavController) {
             Text("Register")
         }
 
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(1.dp))
 
         // Cancel and navigate back to Login screen
         Button(
@@ -308,7 +337,12 @@ fun GenderSelection(selectedGender: String, onGenderSelected: (String) -> Unit) 
     ) {
         // Rotated "Gender" label on the left side
         Text(
-            text = "Gender",
+            text = buildAnnotatedString {
+                append("Gender")
+                withStyle(style = SpanStyle(color = Color.Red)) {
+                    append(" *")
+                }
+            },
             style = MaterialTheme.typography.bodyLarge,
             modifier = Modifier
                 .rotate(-90f)
@@ -348,7 +382,12 @@ fun DropdownMenuField(selectedYear: String, onYearSelected: (String) -> Unit) {
             value = selectedYear,
             onValueChange = { },
             readOnly = true,
-            label = { Text("Year of Birth") },
+            label = { Text(buildAnnotatedString {
+                append("Year of Birth")
+                withStyle(style = SpanStyle(color = Color.Red)) {
+                    append(" *")
+                }
+            }) },
             placeholder = { Text("Select Year of Birth") },
             modifier = Modifier.fillMaxWidth()
                 .padding(horizontal = 15.dp),

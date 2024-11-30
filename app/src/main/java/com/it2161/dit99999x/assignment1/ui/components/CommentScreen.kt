@@ -173,10 +173,11 @@ fun CommentItem(comment: Comments, movie: MovieItem, navController: NavControlle
 
 @Composable
 fun ViewCommentScreen(navController: NavController, movieTitle: String, comment: Comments) {
+    val scrollState = rememberScrollState()
     Scaffold(
         topBar = { MovieRaterTopAppBar(movieTitle, navController) } // Set movieTitle as the top bar title
     ) { innerPadding ->
-        val scrollState = rememberScrollState()
+
         Column(
             modifier = Modifier
                 .padding(innerPadding)

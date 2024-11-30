@@ -184,6 +184,8 @@ fun EditProfileContent(
     onMobileNumberError: (String) -> Unit,
     onEmailError: (String) -> Unit
 ) {
+    val scrollState = rememberScrollState()
+
     // Validation state for fields
     var confirmPasswordError by remember { mutableStateOf(false) }
     var confirmPassword by remember { mutableStateOf("") }
@@ -208,7 +210,8 @@ fun EditProfileContent(
     val emailPattern = "^[A-Za-z0-9+_.-]+@(.+)$".toRegex() // Basic email pattern
 
     Column(
-        modifier = Modifier.fillMaxWidth().padding(16.dp),
+        modifier = Modifier.fillMaxWidth().padding(16.dp)
+            .verticalScroll(scrollState),
         verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {

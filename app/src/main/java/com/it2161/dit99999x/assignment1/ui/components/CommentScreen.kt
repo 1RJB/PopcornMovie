@@ -83,7 +83,7 @@ fun CommentMovieScreen(navController: NavController, movie: MovieItem) {
 
                 Button(onClick = {
                     val newComment = Comments(
-                        user = MovieRaterApplication.instance.userProfile!!.userName, // Replace with actual username
+                        user = MovieRaterApplication.instance.userProfile!!.userName,
                         comment = commentText,
                         date = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date()),
                         time = SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(Date())
@@ -102,6 +102,11 @@ fun CommentMovieScreen(navController: NavController, movie: MovieItem) {
                     currentMovie = MovieRaterApplication.instance.data.find { it.title == currentMovie.title }!!
 
                     commentText = "" // Clear the comment text field
+
+                    // Navigate to the movie details page
+                    val gson = Gson()
+                    val movieJson = gson.toJson(currentMovie)
+                    navController.navigate("movieDetail/$movieJson") // Navigate to movie details
                 }) {
                     Text("Submit")
                 }

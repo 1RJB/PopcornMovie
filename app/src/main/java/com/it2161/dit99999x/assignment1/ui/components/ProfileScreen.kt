@@ -45,11 +45,22 @@ fun ProfileScreen(navController: NavController) {
 
     var showMenu by remember { mutableStateOf(false) }
     var passwordError by remember { mutableStateOf(false) }
+    var confirmPasswordError by remember { mutableStateOf(false) }
+    var userNameError by remember { mutableStateOf("") }
+    var mobileNumberError by remember { mutableStateOf("") }
+    var emailError by remember { mutableStateOf("") }
+
+    // Callback functions to handle errors
+    val onUserNameError: (String) -> Unit = { userNameError = it }
+    val onEmailError: (String) -> Unit = { emailError = it }
+    val onMobileNumberError: (String) -> Unit = { mobileNumberError = it }
+    val onPasswordError: (Boolean) -> Unit = { passwordError = it }
+
+    val isSaveEnabled = !passwordError && !confirmPasswordError && userNameError.isEmpty() && mobileNumberError.isEmpty() && emailError.isEmpty() // Disable Save if password has error, confirm password has error, or any other field has error
 
     Scaffold(
         topBar = {
             if (isEditing) {
-                val isSaveEnabled = !passwordError // Disable Save if passwords don't match
                 CenterAlignedTopAppBar(
                     title = { Text("Edit Profile") },
                     navigationIcon = {
@@ -67,7 +78,7 @@ fun ProfileScreen(navController: NavController) {
                                 isEditing = false
                                 navController.navigate("profile")
                             },
-                            enabled = isSaveEnabled // Enable/Disable based on password validity
+                            enabled = isSaveEnabled // Enable/Disable based on errors
                         ) {
                             Icon(Icons.Filled.Save, contentDescription = "Save")
                         }
@@ -112,9 +123,14 @@ fun ProfileScreen(navController: NavController) {
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             if (isEditing) {
-                EditProfileContent(userProfile) { isPasswordError ->
-                    passwordError = isPasswordError
-                }
+                EditProfileContent(
+                    userProfile = userProfile,
+                    onPasswordError = onPasswordError,
+                    onUserNameError = onUserNameError,
+                    onMobileNumberError = onMobileNumberError,
+                    onEmailError = onEmailError,
+
+                )
             } else {
                 Image(
                     painter = painterResource(id = userProfile.value.profilePicture),
@@ -156,16 +172,30 @@ fun ProfileDetailRow(label: String, value: String) {
 }
 
 @Composable
-fun EditProfileContent(userProfile: MutableState<UserProfile>, onPasswordError: (Boolean) -> Unit) {
-    var confirmPassword by remember { mutableStateOf("") } // State for confirm password
-    var passwordError by remember { mutableStateOf(false) } // State for password error
+fun EditProfileContent(
+    userProfile: MutableState<UserProfile>,
+    onPasswordError: (Boolean) -> Unit,
+    onUserNameError: (String) -> Unit,
+    onMobileNumberError: (String) -> Unit,
+    onEmailError: (String) -> Unit
+) {
+    // Validation state for fields
+    var confirmPasswordError by remember { mutableStateOf(false) }
+    var confirmPassword by remember { mutableStateOf("") }
+    var confirmPasswordErrorMessage by remember { mutableStateOf("") }
+    var passwordErrorMessage by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
     var confirmPasswordVisible by remember { mutableStateOf(false) }
-    // Validation states for fields
     var userNameError by remember { mutableStateOf("") }
     var mobileNumberError by remember { mutableStateOf("") }
     var emailError by remember { mutableStateOf("") }
     var yearOfBirthError by remember { mutableStateOf("") }
+
+    // Reset the password field to empty only if we're in edit mode and the user hasn't changed the password yet
+    val currentPassword = remember { userProfile.value.password }
+
+    // Reset the password field on entering the edit mode to be empty
+    val initialPasswordState = remember { mutableStateOf("") }
 
     // Validation patterns for each rule
     val usernamePattern = "^[a-zA-Z0-9]{3,12}$".toRegex() // Alphanumeric, 3-12 characters
@@ -199,6 +229,7 @@ fun EditProfileContent(userProfile: MutableState<UserProfile>, onPasswordError: 
                     !it.matches(usernamePattern) -> "Username must be 3-12 characters, alphanumeric only"
                     else -> ""
                 }
+                onUserNameError(userNameError)
             },
             label = { Text(buildAnnotatedString {
                 append("Username")
@@ -216,20 +247,53 @@ fun EditProfileContent(userProfile: MutableState<UserProfile>, onPasswordError: 
 
         Spacer(modifier = Modifier.height(8.dp))
 
+        // Trigger confirm password validation if password is filled and confirm password is empty
+        if (initialPasswordState.value.isNotEmpty() && confirmPassword.isEmpty()) {
+            confirmPasswordErrorMessage = "Confirm password is required"
+            confirmPasswordError = true
+        }
+        // Trigger confirm password validation if password is filled and confirm password doesn't match
+        else if (initialPasswordState.value.isNotEmpty() && initialPasswordState.value != confirmPassword) {
+            confirmPasswordErrorMessage = "Passwords do not match"
+            confirmPasswordError = true
+        }
+        else {
+            confirmPasswordErrorMessage = ""
+            confirmPasswordError = false
+        }
+        confirmPasswordError = confirmPasswordErrorMessage.isNotEmpty()
+        onPasswordError(confirmPasswordError) // Trigger callback for password error state
+
         // Update the password fields only when user decides to change the password
         OutlinedTextField(
-            value = userProfile.value.password,
+            value = initialPasswordState.value, // Start with empty password
             onValueChange = {
-                userProfile.value = userProfile.value.copy(password = it)
-                passwordError = it != confirmPassword // Check if passwords match
-                onPasswordError(passwordError) // Notify parent composable
-            },
-            label = { Text(buildAnnotatedString {
-                append("Password")
-                withStyle(style = SpanStyle(color = Color.Red)) {
-                    append(" *")
+                if (it.isNotEmpty()) {
+                    initialPasswordState.value = it // Update only if not empty
+                    userProfile.value = userProfile.value.copy(password = it) // Update the userProfile
+                    passwordErrorMessage = when {
+                        it.length < 8 -> "Password must be at least 8 characters long"
+                        !it.any { char -> char.isUpperCase() } -> "Password must contain at least 1 uppercase letter"
+                        !it.any { char -> char.isLowerCase() } -> "Password must contain at least 1 lowercase letter"
+                        !it.any { char -> char.isDigit() } -> "Password must contain at least 1 number"
+                        !it.any { char -> "!@#$%^&*()_+-=<>?/.,;:'\"".contains(char) } -> "Password must contain at least 1 special character"
+                        else -> ""
+                    }
+                } else {
+                    // If password is left empty, reset it to the current password
+                    initialPasswordState.value = ""
+                    userProfile.value = userProfile.value.copy(password = currentPassword)
+                    passwordErrorMessage = ""
                 }
-            }) },
+                onPasswordError(passwordErrorMessage.isNotEmpty())
+
+                // Trigger confirm password validation on password change
+                if (confirmPassword.isEmpty() && it.isNotEmpty()) {
+                    confirmPasswordErrorMessage = "Confirm password is required"
+                    confirmPasswordError = true
+                }
+            },
+            label = { Text("Password") },
             placeholder = { Text("Enter password") },
             visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
             trailingIcon = {
@@ -239,8 +303,12 @@ fun EditProfileContent(userProfile: MutableState<UserProfile>, onPasswordError: 
                 }
             },
             modifier = Modifier.fillMaxWidth().padding(horizontal = 15.dp),
-            isError = passwordError // Display error state if passwords don't match
+            isError = passwordErrorMessage.isNotEmpty()
         )
+
+        if (passwordErrorMessage.isNotEmpty()) {
+            Text(passwordErrorMessage, color = MaterialTheme.colorScheme.error)
+        }
 
         Spacer(modifier = Modifier.height(8.dp))
 
@@ -248,16 +316,27 @@ fun EditProfileContent(userProfile: MutableState<UserProfile>, onPasswordError: 
             value = confirmPassword,
             onValueChange = {
                 confirmPassword = it
-                passwordError = userProfile.value.password != it // Check if passwords match
-                onPasswordError(passwordError) // Notify parent composable
-            },
-            label = { Text(buildAnnotatedString {
-                append("Confirm Password")
-                withStyle(style = SpanStyle(color = Color.Red)) {
-                    append(" *")
+                confirmPasswordErrorMessage = when {
+                    it != userProfile.value.password -> "Passwords do not match"
+                    else -> ""
                 }
-            }) },
-            placeholder = { Text("Enter password") },
+                confirmPasswordError = confirmPasswordErrorMessage.isNotEmpty()
+                onPasswordError(confirmPasswordError)
+                // Only validate confirm password if the main password is not empty
+                if (userProfile.value.password.isNotEmpty()) {
+                    confirmPasswordErrorMessage = if (it != userProfile.value.password) {
+                        "Passwords do not match"
+                    } else {
+                        ""
+                    }
+                } else {
+                    confirmPasswordErrorMessage = if (it.isEmpty()) "Confirm Password is required" else ""
+                }
+                confirmPasswordError = confirmPasswordErrorMessage.isNotEmpty()
+                onPasswordError(confirmPasswordError) // Trigger callback for password error state
+            },
+            label = { Text("Confirm Password") },
+            placeholder = { Text("Re-enter password") },
             visualTransformation = if (confirmPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
             trailingIcon = {
                 val image = if (confirmPasswordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
@@ -266,8 +345,11 @@ fun EditProfileContent(userProfile: MutableState<UserProfile>, onPasswordError: 
                 }
             },
             modifier = Modifier.fillMaxWidth().padding(horizontal = 15.dp),
-            isError = passwordError // Display error state if passwords don't match
+            isError = confirmPasswordErrorMessage.isNotEmpty()
         )
+        if (confirmPasswordErrorMessage.isNotEmpty()) {
+            Text(confirmPasswordErrorMessage, color = MaterialTheme.colorScheme.error)
+        }
 
         Spacer(modifier = Modifier.height(8.dp))
 
@@ -296,6 +378,7 @@ fun EditProfileContent(userProfile: MutableState<UserProfile>, onPasswordError: 
                     !it.matches(mobileNumberPattern) -> "Mobile number must be 8 digits"
                     else -> ""
                 }
+                onMobileNumberError(mobileNumberError)
             },
             label = { Text(buildAnnotatedString {
                 append("Mobile Number")
@@ -322,6 +405,7 @@ fun EditProfileContent(userProfile: MutableState<UserProfile>, onPasswordError: 
                     !it.matches(emailPattern) -> "Invalid email format"
                     else -> ""
                 }
+                onEmailError(emailError)
             },
             label = { Text(buildAnnotatedString {
                 append("Email")

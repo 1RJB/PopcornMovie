@@ -40,10 +40,7 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.it2161.dit99999x.assignment1.MovieRaterApplication
 import com.it2161.dit99999x.assignment1.data.MovieItem
-import com.it2161.dit99999x.assignment1.data.Comments
-import org.json.JSONArray
 import com.google.gson.Gson
-import jsonData
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -53,28 +50,8 @@ fun LandingScreen(navController: NavController) {
 
     // Parse JSON data
     val movieList = remember {
-        val jsonArray = JSONArray(jsonData)
-        val movies = mutableListOf<MovieItem>()
-        for (i in 0 until jsonArray.length()) {
-            val jsonObject = jsonArray.getJSONObject(i)
-            val title = jsonObject.getString("title")
-            val director = jsonObject.getString("director")
-            val releaseDate = jsonObject.getString("release_date")
-            val rating = jsonObject.getString("rating").split("/")[0].toFloatOrNull() ?: 0f
-            val actors = gson.fromJson(jsonObject.getJSONArray("actors").toString(), Array<String>::class.java).toList()
-            val image = jsonObject.getString("image")
-            val genre = jsonObject.getString("genre")
-            val length = jsonObject.getInt("length")
-            val synopsis = jsonObject.getString("synopsis")
-            val comments = gson.fromJson(jsonObject.getJSONArray("comments").toString(), Array<Comments>::class. java).toList()
-
-            val movieItem = MovieItem(title, director, releaseDate, rating, actors, image, genre, length, synopsis, comments)
-            movies.add(movieItem)
-        }
-        movies
+        MovieRaterApplication.instance.data.toList()
     }
-
-
 
     var showMenu by remember { mutableStateOf(false) }
 
@@ -118,7 +95,7 @@ fun LandingScreen(navController: NavController) {
         ) {
             items(movieList) { movie ->
                 // Pass gson to MovieItemCard
-                MovieItemCard(movie, gson) {
+                MovieItemCard(movie) {
                     navController.navigate("movieDetail/${gson.toJson(movie)}")
                 }
             }
@@ -127,7 +104,7 @@ fun LandingScreen(navController: NavController) {
 }
 
 @Composable
-fun MovieItemCard(movie: MovieItem, gson: Gson, onMovieClick: () -> Unit) {
+fun MovieItemCard(movie: MovieItem, onMovieClick: () -> Unit) {
     var imageHeight by remember { mutableIntStateOf(0) }
 
     Card(

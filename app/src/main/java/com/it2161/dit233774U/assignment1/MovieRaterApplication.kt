@@ -42,7 +42,6 @@ class MovieRaterApplication : Application() {
                 field = value
                 saveProfileToFile(applicationContext)
             }
-
         }
 
     override fun onCreate() {
@@ -55,7 +54,6 @@ class MovieRaterApplication : Application() {
     //Loads the movie data into the list.
     private fun loadMovieDataIntoList(context: Context) {
         val jsonArray = JSONArray(jsonData)
-
 
         val file = File(context.filesDir, "movielist.dat")
         if (!file.exists()) {
@@ -80,7 +78,6 @@ class MovieRaterApplication : Application() {
                     val time = commentsObj.getString("time")
                     val newComment = Comments(user, comment,date,time)
                     listOfComments.add(newComment)
-
                 }
                 data.add(
                     MovieItem(
@@ -113,14 +110,12 @@ class MovieRaterApplication : Application() {
 
     private fun saveListFile(context: Context) {
 
-
         if (context != null) {
             val gson = Gson()
             val jsonString = gson.toJson(data)
             val file = File(context.filesDir, "movielist.dat")
             file.writeText(jsonString)
         }
-
     }
 
     private fun saveProfileToFile(context: Context) {
@@ -179,6 +174,4 @@ class MovieRaterApplication : Application() {
 
         return imageBitmap
     }
-
-
 }

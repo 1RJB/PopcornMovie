@@ -34,7 +34,7 @@ import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CommentMovieScreen(navController: NavController, movie: MovieItem) {
+fun AddCommentScreen(navController: NavController, movie: MovieItem) {
     var commentText by remember { mutableStateOf("") }
     // Find the movie in MovieRaterApplication's data
     var currentMovie by remember {
@@ -54,12 +54,10 @@ fun CommentMovieScreen(navController: NavController, movie: MovieItem) {
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             item {
-                // Comment Section
                 Column(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-
                         Image(
                             bitmap = MovieRaterApplication.instance.getImgVector(movie.image)
                                 .asImageBitmap(),
@@ -72,8 +70,6 @@ fun CommentMovieScreen(navController: NavController, movie: MovieItem) {
 
                         Spacer(modifier = Modifier.height(16.dp))
 
-
-
                         OutlinedTextField(
                             value = commentText,
                             onValueChange = { commentText = it },
@@ -82,8 +78,6 @@ fun CommentMovieScreen(navController: NavController, movie: MovieItem) {
                         )
 
                         Spacer(modifier = Modifier.height(16.dp))
-
-
 
                         Button(onClick = {
                             val newComment = Comments(
@@ -111,31 +105,15 @@ fun CommentMovieScreen(navController: NavController, movie: MovieItem) {
                                 }.toMutableList()
                             MovieRaterApplication.instance.data = updatedData
 
-                            // Update currentMovie to trigger recomposition
-                            currentMovie =
-                                MovieRaterApplication.instance.data.find { it.title == currentMovie.title }!!
-
-                            commentText = "" // Clear the comment text field
-
-                            // Navigate to the movie details page
                             val gson = Gson()
                             val movieJson = gson.toJson(currentMovie)
-                            navController.navigate("movieDetail/$movieJson") // Navigate to movie details
+                            navController.navigate("movieDetail/$movieJson") // Navigate to movie details screen
                         }) {
                             Text("Submit")
                         }
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
-            }
-
-            item {
-                // View Comments Section
-                Column {
-                    for (comment in currentMovie.comment.sortedByDescending { it.date + " " + it.time }) {
-                        CommentItem(comment, movie, navController) // Use imported CommentItem
-                    }
-                }
             }
         }
     }
@@ -149,7 +127,7 @@ fun CommentItem(comment: Comments, movie: MovieItem, navController: NavControlle
             .fillMaxWidth()
             .padding(8.dp)
             .clickable {
-                navController.navigate("view_comments/${movie.title}/${gson.toJson(comment)}")
+                navController.navigate("view_comment/${movie.title}/${gson.toJson(comment)}")
             },
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
@@ -177,7 +155,7 @@ fun CommentItem(comment: Comments, movie: MovieItem, navController: NavControlle
                     Text(comment.user, style = MaterialTheme.typography.bodyMedium)
                     Text(
                         formatDateTime(comment.date, comment.time),
-                        style = MaterialTheme.typography.bodySmall
+                        style = MaterialTheme.typography.bodySmall,
                     )
                 }
 
@@ -218,11 +196,16 @@ fun ViewCommentScreen(navController: NavController, movieTitle: String, comment:
                     Spacer(modifier = Modifier.width(16.dp))
 
                     Column {
-                        Text(comment.user, style = MaterialTheme.typography.bodyMedium)
-                        Text(
-                            formatDateTime(comment.date, comment.time),
-                            style = MaterialTheme.typography.bodySmall
-                        )
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text(comment.user, style = MaterialTheme.typography.bodyMedium)
+                            Text(
+                                formatDateTime(comment.date, comment.time),
+                                style = MaterialTheme.typography.bodySmall,
+                            )
+                        }
                     }
                 }
             }
@@ -232,12 +215,14 @@ fun ViewCommentScreen(navController: NavController, movieTitle: String, comment:
                 comment.comment,
                 style = MaterialTheme.typography.bodyMedium,
                 modifier = Modifier.padding(16.dp)
+
             )
             }
         }
     }
 }
 
+// Use same app bar for Add Comment screen and View Comment screen
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MovieRaterTopAppBar(title: String, navController: NavController) {
@@ -247,7 +232,10 @@ fun MovieRaterTopAppBar(title: String, navController: NavController) {
             IconButton(onClick = { navController.popBackStack() }) {
                 Icon(Icons.Filled.ArrowBack, contentDescription = "Back")
             }
-        }
+        },
+        colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+            containerColor = MaterialTheme.colorScheme.onPrimary
+        )
     )
 }
 
@@ -278,8 +266,12 @@ fun formatDateTime(date: String, time: String): String {
     val daysAgo = ChronoUnit.DAYS.between(commentDateTime, currentDateTime)
 
     return when {
+        secondsAgo < 1 -> "Just now"
+        secondsAgo < 2 -> "1 sec ago"
         secondsAgo < 60 -> "$secondsAgo secs ago"
+        minutesAgo < 2 -> "1 min ago"
         minutesAgo < 60 -> "$minutesAgo mins ago"
+        hoursAgo < 2 -> "1 hr ago"
         hoursAgo < 24 -> "$hoursAgo hrs ago"
         daysAgo == 1L -> "1 day ago"
         else -> "$daysAgo days ago"

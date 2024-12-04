@@ -24,6 +24,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -48,7 +49,7 @@ fun LandingScreen(navController: NavController) {
 
     val gson = Gson()
 
-    // Parse JSON data
+    // Load movie data
     val movieList = remember {
         MovieRaterApplication.instance.data.toList()
     }
@@ -82,7 +83,10 @@ fun LandingScreen(navController: NavController) {
                             }
                         )
                     }
-                }
+                },
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.onPrimary
+                )
             )
         }
     ) { innerPadding ->
@@ -94,7 +98,6 @@ fun LandingScreen(navController: NavController) {
                 .fillMaxSize()
         ) {
             items(movieList) { movie ->
-                // Pass gson to MovieItemCard
                 MovieItemCard(movie) {
                     navController.navigate("movieDetail/${gson.toJson(movie)}")
                 }
@@ -135,9 +138,10 @@ fun MovieItemCard(movie: MovieItem, onMovieClick: () -> Unit) {
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    val maxChars = (imageHeight / (MaterialTheme.typography.bodyMedium.fontSize.value) * 6).toInt() // Estimate max characters
+                    // Max no. of chars based image height and font size
+                    val maxChars = (imageHeight / (MaterialTheme.typography.bodyMedium.fontSize.value) * 6).toInt()
                     val truncatedSynopsis = if (movie.synopsis.length > maxChars) {
-                        movie.synopsis.substring(0, maxChars) + "..." // Add ellipsis
+                        movie.synopsis.substring(0, maxChars) + "..."
                     } else {
                         movie.synopsis
                     }

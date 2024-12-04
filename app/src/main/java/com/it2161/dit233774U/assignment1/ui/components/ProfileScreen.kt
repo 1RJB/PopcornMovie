@@ -83,7 +83,10 @@ fun ProfileScreen(navController: NavController) {
                         ) {
                             Icon(Icons.Filled.Save, contentDescription = "Save")
                         }
-                    }
+                    },
+                    colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.onPrimary
+                    )
                 )
             } else {
                 CenterAlignedTopAppBar(
@@ -112,7 +115,10 @@ fun ProfileScreen(navController: NavController) {
                                 }
                             )
                         }
-                    }
+                    },
+                    colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.onPrimary
+                    )
                 )
             }
         }

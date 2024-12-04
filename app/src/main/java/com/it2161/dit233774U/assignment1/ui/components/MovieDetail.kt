@@ -13,7 +13,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.asImageBitmap
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -54,13 +53,16 @@ fun MovieDetailScreen(navController: NavController, movie: MovieItem) {
                             text = { Text("Add Comments") },
                             onClick = {
                                 val gson = Gson()
-                                val movieJson = gson.toJson(movie) // Convert movie object to JSON
+                                val movieJson = gson.toJson(movie)
                                 navController.navigate("add_comment/$movieJson")
                                 showMenu = false
                             }
                         )
                     }
-                }
+                },
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.onPrimary
+                )
             )
         }
     ) { innerPadding ->
@@ -76,24 +78,23 @@ fun MovieDetailScreen(navController: NavController, movie: MovieItem) {
                         .asImageBitmap(),
                     contentDescription = movie.title,
                     modifier = Modifier
-                        .aspectRatio(0.95f) // Make it square
-                        .height(140.dp) // Maintain desired height
+                        .aspectRatio(0.95f)
+                        .height(140.dp)
                         .padding(16.dp),
-                    contentScale = ContentScale.Crop
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
             }
 
             item {
-                // Display movie details from JSON
+                // Display movie details, except comments, from JSON
                 MovieDetails(currentMovie.value)
 
                 Spacer(modifier = Modifier.height(16.dp))
             }
 
             item {
-                // Display comments without LazyColumn
+                // Display comments
                 CommentsSection(currentMovie.value.comment, movie, navController)
             }
         }
@@ -115,7 +116,7 @@ fun MovieDetails(movie: MovieItem) {
 
 @Composable
 fun CommentsSection(comments: List<Comments>, movie: MovieItem, navController: NavController) {
-    Text("Comments", style = MaterialTheme.typography.titleLarge, textAlign = TextAlign.Center, fontSize = 20.sp, modifier = Modifier.padding(top=16.dp))
+    Text("Comments", style = MaterialTheme.typography.titleLarge, textAlign = TextAlign.Center, fontSize = 20.sp, modifier = Modifier.padding(top=8.dp))
     Column(modifier = Modifier.padding(16.dp)) {
             for (comment in comments.sortedByDescending { it.date + " " + it.time }) {
                 CommentItem(comment, movie, navController)

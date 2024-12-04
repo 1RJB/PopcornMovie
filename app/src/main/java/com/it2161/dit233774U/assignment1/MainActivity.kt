@@ -13,7 +13,7 @@ import com.it2161.dit233774U.assignment1.ui.components.LoginScreen
 import com.it2161.dit233774U.assignment1.ui.components.LandingScreen
 import com.it2161.dit233774U.assignment1.ui.components.RegisterUserScreen
 import com.it2161.dit233774U.assignment1.ui.components.MovieDetailScreen
-import com.it2161.dit233774U.assignment1.ui.components.CommentMovieScreen
+import com.it2161.dit233774U.assignment1.ui.components.AddCommentScreen
 import com.it2161.dit233774U.assignment1.ui.components.ProfileScreen
 import com.it2161.dit233774U.assignment1.ui.theme.Assignment1Theme
 import androidx.navigation.NavType
@@ -50,10 +50,10 @@ class MainActivity : ComponentActivity() {
                         ) { backStackEntry ->
                             val movieJson = backStackEntry.arguments?.getString("movieJson")
                             val movie = gson.fromJson(movieJson, MovieItem::class.java)
-                            CommentMovieScreen(navController, movie) // Call CommentScreen with movie data
+                            AddCommentScreen(navController, movie) // Call AddCommentScreen with movie data
                         }
                         composable(
-                            "view_comments/{movieTitle}/{commentJson}",
+                            "view_comment/{movieTitle}/{commentJson}",
                             arguments = listOf(
                                 navArgument("movieTitle") { type = NavType.StringType },
                                 navArgument("commentJson") { type = NavType.StringType }
@@ -70,7 +70,7 @@ class MainActivity : ComponentActivity() {
                         ) { backStackEntry ->
                             val movieJson = backStackEntry.arguments?.getString("movieJson")
                             val movie = gson.fromJson(movieJson, MovieItem::class.java)
-                            CommentMovieScreen(navController, movie) // Call CommentMovieScreen with movie data
+                            AddCommentScreen(navController, movie)
                         }
                         composable("profile") { ProfileScreen(navController) }
                     }

@@ -100,16 +100,21 @@ fun LoginScreen(navController: NavController) {
                     Toast.makeText(context, "Invalid username or password", Toast.LENGTH_SHORT).show()
                 }
             },
-            modifier = Modifier.padding(horizontal = 16.dp)
+            modifier = Modifier.width(102.dp)
         ) {
             Text("Login")
         }
 
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(3.dp))
 
-        TextButton(
+        Button(
             onClick = { navController.navigate("register") },
-            modifier = Modifier.padding(horizontal = 16.dp)
+            modifier = Modifier.width(102.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.background,
+                contentColor = MaterialTheme.colorScheme.primary
+            ),
+            border = ButtonDefaults.outlinedButtonBorder
         ) {
             Text("Register")
         }

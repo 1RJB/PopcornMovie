@@ -154,7 +154,7 @@ fun RegisterUserScreen(navController: NavController) {
                 },
                 placeholder = { Text("Enter username") },
                 isError = userNameError.isNotEmpty(),
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 15.dp)
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 28.dp)
             )
             if (userNameError.isNotEmpty()) {
                 Text(userNameError, color = MaterialTheme.colorScheme.error)
@@ -199,7 +199,7 @@ fun RegisterUserScreen(navController: NavController) {
                     }
                 },
                 isError = passwordError.isNotEmpty(),
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 15.dp)
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 28.dp)
             )
             if (passwordError.isNotEmpty()) {
                 Text(passwordError, color = MaterialTheme.colorScheme.error)
@@ -238,7 +238,7 @@ fun RegisterUserScreen(navController: NavController) {
                     }
                 },
                 isError = confirmPasswordError.isNotEmpty(),
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 15.dp)
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 28.dp)
             )
             if (confirmPasswordError.isNotEmpty()) {
                 Text(confirmPasswordError, color = MaterialTheme.colorScheme.error)
@@ -292,7 +292,7 @@ fun RegisterUserScreen(navController: NavController) {
                 placeholder = { Text("Enter mobile number") },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 isError = mobileNumberError.isNotEmpty(),
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 15.dp)
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 28.dp)
             )
             if (mobileNumberError.isNotEmpty()) {
                 Text(mobileNumberError, color = MaterialTheme.colorScheme.error)
@@ -319,7 +319,7 @@ fun RegisterUserScreen(navController: NavController) {
                 },
                 placeholder = { Text("Enter email") },
                 isError = emailError.isNotEmpty(),
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 15.dp)
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 28.dp)
             )
             if (emailError.isNotEmpty()) {
                 Text(emailError, color = MaterialTheme.colorScheme.error)
@@ -368,7 +368,7 @@ fun RegisterUserScreen(navController: NavController) {
                         ).show()
                     }
                 },
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 15.dp)
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 28.dp)
             ) {
                 Text("Register")
             }
@@ -380,12 +380,16 @@ fun RegisterUserScreen(navController: NavController) {
             // Cancel and navigate back to Login screen
             Button(
                 onClick = { navController.navigate("login") },
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 15.dp)
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 28.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.background,
+                    contentColor = MaterialTheme.colorScheme.primary
+                ),
+                border = ButtonDefaults.outlinedButtonBorder
             ) {
                 Text("Cancel")
             }
         }
-
     }
 }
 
@@ -408,7 +412,7 @@ fun GenderSelection(selectedGender: String, onGenderSelected: (String) -> Unit) 
             style = MaterialTheme.typography.bodyLarge,
             modifier = Modifier
                 .rotate(-90f)
-                .padding(end = 16.dp) // Space between label and options
+                .padding(end = 18.dp)
         )
 
         // Gender options in a column
@@ -418,7 +422,7 @@ fun GenderSelection(selectedGender: String, onGenderSelected: (String) -> Unit) 
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(vertical = 0.dp, horizontal = 25.dp) // Space between each option row
+                        .padding(vertical = 0.dp, horizontal = 25.dp)
                 ) {
                     Text(
                         text = genderOption,
@@ -452,7 +456,7 @@ fun DropdownMenuField(selectedYear: String, onYearSelected: (String) -> Unit) {
             }) },
             placeholder = { Text("Select Year of Birth") },
             modifier = Modifier.fillMaxWidth()
-                .padding(horizontal = 15.dp),
+                .padding(horizontal = 28.dp),
             trailingIcon = {
                 IconButton(onClick = { expanded = !expanded }) {
                     Icon(Icons.Default.ArrowDropDown, contentDescription = "Expand Year of Birth")
